@@ -11,6 +11,7 @@
 
 int main () {
 	lcd_t *lcd = lcd_init(25, 24, 0x3f);
+	lcd_print_str(lcd, "Hola");
 	printf("fin\n");
 }
 

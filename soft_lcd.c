@@ -1,23 +1,11 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <wiringPi.h>
 #include "soft_lcd.h"
 #include "soft_i2c.h"
 
-/* check if PCF8574 driver is ready */
-int _pcf8874_check (lcd_t *lcd) {
-	i2c_start(lcd->_i2c);
-
-	int r = i2c_send_byte(
-			lcd->_i2c, 
-			lcd->_addr << 1 | I2C_WRITE);
-	
-	if (r != I2C_ACK) return 0;
-	
-	i2c_stop(lcd->_i2c);
-	return 1;
-}
 
 lcd_t *lcd_init(int scl, int sda, int addr) {
 	lcd_t *lcd = (lcd_t*) malloc(sizeof(lcd_t));
@@ -35,30 +23,12 @@ lcd_t *lcd_init(int scl, int sda, int addr) {
 	
 	lcd_raw(lcd, 
 			LCD_WRITE,
-			LCD_CMD_DISPLAY_SET | LCD_DISPLAY_ON | LCD_DISPLAY_CURSOR_ON | LCD_DISPLAY_BLINK_OFF);
-
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 'R');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 'e');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 'i');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 'n');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 'o');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 's');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 'o');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, ' ');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, 'G');
-	lcd_raw(lcd, LCD_WRITE | LCD_RS, '.');
-
+			LCD_CMD_DISPLAY_SET | LCD_DISPLAY_ON | LCD_DISPLAY_CURSOR_OFF | LCD_DISPLAY_BLINK_OFF);
 
 	return lcd;
 }
 
-/* Reset 4/8bit mode
- * Set 4 bit mode
- * Clear display
- * Cursor home
- * 2 lines
- * LCD ON
- */
+/* Reset 4/8bit mode, 2 lines and some sensible defaults */
 void lcd_reset (lcd_t *lcd) {
 	/*usleep(45000);
 	lcd_raw(lcd, LCD_WRITE, 0b00110000);
@@ -77,9 +47,15 @@ void lcd_reset (lcd_t *lcd) {
 
 	lcd_clear(lcd);
 	lcd_home(lcd);
-
 }
 
+/* Prints string in actual cursor position */
+void lcd_print_str(lcd_t *lcd, char *s) {
+	int i;
+	for (i = 0; i < strlen(s); i++) {
+		lcd_raw(lcd, LCD_WRITE | LCD_RS, s[i]);
+	}
+}
 
 void lcd_home (lcd_t *lcd) {
 	lcd_raw(lcd, LCD_WRITE, LCD_CMD_HOME);
@@ -98,11 +74,11 @@ void lcd_raw (lcd_t *lcd, int lcd_opts, int data) {
 
 	printf("Data: %02x\n", data);
 
-	_pcf_put(lcd, (upper << 4) | lcd_opts);
-	_pcf_put(lcd, (lower << 4) | lcd_opts);
+	_pcf8874_put(lcd, (upper << 4) | lcd_opts);
+	_pcf8874_put(lcd, (lower << 4) | lcd_opts);
 }
 
-int _pcf_put (lcd_t *lcd, int lines) {
+int _pcf8874_put (lcd_t *lcd, int lines) {
 	printf("Sending lines: %02x\n", lines);
 	i2c_start(lcd->_i2c);
 	int r = i2c_send_byte(
@@ -128,4 +104,17 @@ int _pcf_put (lcd_t *lcd, int lines) {
 	return 1;
 }
 
+/* check if PCF8574 driver is ready */
+int _pcf8874_check (lcd_t *lcd) {
+	i2c_start(lcd->_i2c);
+
+	int r = i2c_send_byte(
+			lcd->_i2c, 
+			lcd->_addr << 1 | I2C_WRITE);
+	
+	if (r != I2C_ACK) return 0;
+	
+	i2c_stop(lcd->_i2c);
+	return 1;
+}
 

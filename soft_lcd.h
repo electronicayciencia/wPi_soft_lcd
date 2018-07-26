@@ -18,8 +18,8 @@
 #define LCD_D6      40
 #define LCD_D7      80
 
-#define LCD_CMD_DDRAM_SET LCD_D7
-#define LCD_CMD_CGRAM_SET LCD_D6
+#define LCD_CMD_DDRAM_SET      LCD_D7
+#define LCD_CMD_CGRAM_SET      LCD_D6
 
 #define LCD_CMD_FCN_SET        LCD_D5
 #define LCD_FCN_4BIT           0
@@ -43,11 +43,19 @@
 #define LCD_DISPLAY_BLINK_OFF  0
 #define LCD_DISPLAY_BLINK_ON   LCD_D0
 
-#define LCD_CMD_HOME  LCD_D1
-#define LCD_CMD_CLEAR LCD_D0
+#define LCD_CMD_ENTRYMODE_SET       LCD_D2
+#define LCD_ENTRYMODE_CURSOR_DECR   0
+#define LCD_ENTRYMODE_CURSOR_INCR   LCD_D1
+#define LCD_ENTRYMODE_SCROLL_OFF    0
+#define LCD_ENTRYMODE_SCROLL_ON     LCD_D0
 
+#define LCD_CMD_HOME           LCD_D1
+#define LCD_CMD_CLEAR          LCD_D0
 
-
+#define LCD_L1  0x00
+#define LCD_L2  0x40
+#define LCD_L3  0x14
+#define LCD_L4  0x54
 
 
 typedef struct {
@@ -66,6 +74,7 @@ void lcd_clear (lcd_t *lcd);
 
 /* Tries to initialize LCD via I2C */
 lcd_t *lcd_init(int scl, int sda, int addr);
+void lcd_print_str(lcd_t *lcd, char *s);
 
 #endif
 
