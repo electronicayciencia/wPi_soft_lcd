@@ -9,14 +9,14 @@
 #define LCD_ENABLED 4
 #define LCD_BKLIGHT 8
 
-#define LCD_D0      1
-#define LCD_D1      2
-#define LCD_D2      4
-#define LCD_D3      8
-#define LCD_D4      10
-#define LCD_D5      20
-#define LCD_D6      40
-#define LCD_D7      80
+#define LCD_D0      0x01
+#define LCD_D1      0x02
+#define LCD_D2      0x04
+#define LCD_D3      0x08
+#define LCD_D4      0x10
+#define LCD_D5      0x20
+#define LCD_D6      0x40
+#define LCD_D7      0x80
 
 #define LCD_CMD_DDRAM_SET      LCD_D7
 #define LCD_CMD_CGRAM_SET      LCD_D6
@@ -52,29 +52,34 @@
 #define LCD_CMD_HOME           LCD_D1
 #define LCD_CMD_CLEAR          LCD_D0
 
-#define LCD_L1  0x00
-#define LCD_L2  0x40
-#define LCD_L3  0x14
-#define LCD_L4  0x54
-
 
 typedef struct {
+	int fcn_set;
+	int cursor_set;
+	int display_set;
+	int entrymode_set;
 	int backlight;
 	int _addr;
 	i2c_t _i2c;
 } lcd_t;
 
-int _pcf8874_check (lcd_t *lcd);
-void lcd_reset (lcd_t *lcd);
-int _pcf_put(lcd_t *lcd, int lines);
-void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
+lcd_t *lcd_create(int scl, int sda, int addr);
+void lcd_init(lcd_t *lcd);
+void lcd_reconfig(lcd_t *lcd);
+void lcd_reconfig_fcn(lcd_t *lcd);
+void lcd_reconfig_cursor(lcd_t *lcd);
+void lcd_reconfig_display(lcd_t *lcd);
+void lcd_reconfig_entrymode(lcd_t *lcd);
+void lcd_pos(lcd_t *lcd, int row, int col);
 void lcd_home (lcd_t *lcd);
 void lcd_clear (lcd_t *lcd);
-
-
-/* Tries to initialize LCD via I2C */
-lcd_t *lcd_init(int scl, int sda, int addr);
+void lcd_reset (lcd_t *lcd);
 void lcd_print_str(lcd_t *lcd, char *s);
+void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
+int _pcf8874_put (lcd_t *lcd, int lines);
+int _pcf8874_check (i2c_t i2c, int addr);
+
+
 
 #endif
 

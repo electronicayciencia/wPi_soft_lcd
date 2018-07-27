@@ -7,54 +7,57 @@
 #include "soft_i2c.h"
 
 
-lcd_t *lcd_init(int scl, int sda, int addr) {
-	lcd_t *lcd = (lcd_t*) malloc(sizeof(lcd_t));
+lcd_t *lcd_create(int scl, int sda, int addr) {
 
 	if (wiringPiSetup () == -1)
 	        return NULL;
+	
+	i2c_t i2c = i2c_init(scl, sda);
+	if ( !_pcf8874_check(i2c, addr) ) return NULL;
 
-	lcd->_addr = addr;
-	lcd->_i2c  = i2c_init(scl, sda);
-	lcd->backlight = 1;
+	lcd_t *lcd = (lcd_t*) malloc(sizeof(lcd_t));
 
-	if ( !_pcf8874_check(lcd) ) return NULL;
+	lcd->_addr         = addr;
+	lcd->_i2c          = i2c_init(scl, sda);
+
+	lcd->fcn_set       = LCD_FCN_4BIT | LCD_FCN_2LINES | LCD_FCN_5x8;
+	lcd->cursor_set    = LCD_CURSOR_MOVE_CUR | LCD_CURSOR_LEFT;
+	lcd->display_set   = LCD_DISPLAY_ON | LCD_DISPLAY_CURSOR_OFF | LCD_DISPLAY_BLINK_OFF;
+	lcd->entrymode_set = LCD_ENTRYMODE_CURSOR_DECR | LCD_ENTRYMODE_SCROLL_OFF;
+
+	lcd->backlight     = LCD_BKLIGHT;
 	
 	lcd_reset(lcd);
-	
-	lcd_raw(lcd, 
-			LCD_WRITE,
-			LCD_CMD_DISPLAY_SET | LCD_DISPLAY_ON | LCD_DISPLAY_CURSOR_OFF | LCD_DISPLAY_BLINK_OFF);
 
 	return lcd;
 }
 
-/* Reset 4/8bit mode, 2 lines and some sensible defaults */
-void lcd_reset (lcd_t *lcd) {
-	/*usleep(45000);
-	lcd_raw(lcd, LCD_WRITE, 0b00110000);
-	usleep(5000);
-	lcd_raw(lcd, LCD_WRITE, 0b00110000);
-	usleep(1000);
-	lcd_raw(lcd, LCD_WRITE, 0b00110000);*/
-
-	lcd_raw(lcd, 
-			LCD_WRITE,
-			LCD_CMD_FCN_SET | LCD_FCN_4BIT | LCD_FCN_2LINES | LCD_FCN_5x8);
-	
-	lcd_raw(lcd, 
-			LCD_WRITE,
-			LCD_CMD_CURSOR_SET | LCD_CURSOR_MOVE_CUR | LCD_CURSOR_LEFT);
-
+void lcd_init(lcd_t *lcd) {
+	lcd_reconfig(lcd);
 	lcd_clear(lcd);
 	lcd_home(lcd);
 }
 
-/* Prints string in actual cursor position */
-void lcd_print_str(lcd_t *lcd, char *s) {
-	int i;
-	for (i = 0; i < strlen(s); i++) {
-		lcd_raw(lcd, LCD_WRITE | LCD_RS, s[i]);
-	}
+
+/* send configuration parameters to LCD */
+void lcd_reconfig(lcd_t *lcd) {
+	lcd_reconfig_fcn(lcd);
+	lcd_reconfig_cursor(lcd);
+	lcd_reconfig_display(lcd);
+	lcd_reconfig_entrymode(lcd);
+}
+
+void lcd_reconfig_fcn(lcd_t *lcd) { 
+	lcd_raw(lcd, LCD_WRITE, LCD_CMD_FCN_SET | lcd->fcn_set);
+}
+void lcd_reconfig_cursor(lcd_t *lcd) {
+	lcd_raw(lcd, LCD_WRITE, LCD_CMD_CURSOR_SET | lcd->cursor_set);
+}
+void lcd_reconfig_display(lcd_t *lcd) {
+	lcd_raw(lcd, LCD_WRITE, LCD_CMD_DISPLAY_SET | lcd->display_set);
+}
+void lcd_reconfig_entrymode(lcd_t *lcd) {
+	lcd_raw(lcd, LCD_WRITE, LCD_CMD_ENTRYMODE_SET | lcd->entrymode_set);
 }
 
 void lcd_home (lcd_t *lcd) {
@@ -66,20 +69,50 @@ void lcd_clear (lcd_t *lcd) {
 	usleep(2000);
 }
 
+void lcd_pos(lcd_t *lcd, int row, int col) {
+	int r_value[] = {0x00, 0x40, 0x14, 0x54};
+	lcd_raw(lcd, LCD_WRITE, LCD_CMD_DDRAM_SET | (r_value[row] + col));
+}
+
+/* Reset and set 4 bit mode */
+void lcd_reset (lcd_t *lcd) {
+	usleep(45000);
+	_pcf8874_put(lcd, LCD_D5 | LCD_D4);
+
+	usleep(5000);
+	_pcf8874_put(lcd, LCD_D5 | LCD_D4);
+
+	usleep(1000);
+	_pcf8874_put(lcd, LCD_D5 | LCD_D4);
+
+	/* we assume pcf8874 and 4bit mode for now */
+	if (lcd->fcn_set & LCD_FCN_8BIT) return;
+
+	_pcf8874_put(lcd, LCD_CMD_FCN_SET | LCD_FCN_4BIT);
+}
+
+/* Prints string in actual cursor position */
+void lcd_print_str(lcd_t *lcd, char *s) {
+	int i;
+	for (i = 0; i < strlen(s); i++) {
+		lcd_raw(lcd, LCD_WRITE | LCD_RS, s[i]);
+	}
+}
+
 void lcd_raw (lcd_t *lcd, int lcd_opts, int data) {
 	int upper = (data >> 4) & 0xF;
 	int lower = data & 0xF;
 
-	lcd_opts |= (lcd->backlight * LCD_BKLIGHT);
+	lcd_opts |= LCD_BKLIGHT;
 
-	printf("Data: %02x\n", data);
+	//printf("Data: %02x\n", data);
 
 	_pcf8874_put(lcd, (upper << 4) | lcd_opts);
 	_pcf8874_put(lcd, (lower << 4) | lcd_opts);
 }
 
 int _pcf8874_put (lcd_t *lcd, int lines) {
-	printf("Sending lines: %02x\n", lines);
+	//printf("Sending lines: %02x\n", lines);
 	i2c_start(lcd->_i2c);
 	int r = i2c_send_byte(
 			lcd->_i2c, 
@@ -105,16 +138,16 @@ int _pcf8874_put (lcd_t *lcd, int lines) {
 }
 
 /* check if PCF8574 driver is ready */
-int _pcf8874_check (lcd_t *lcd) {
-	i2c_start(lcd->_i2c);
+int _pcf8874_check (i2c_t i2c, int addr) {
+	i2c_start(i2c);
 
 	int r = i2c_send_byte(
-			lcd->_i2c, 
-			lcd->_addr << 1 | I2C_WRITE);
+			i2c, 
+			addr << 1 | I2C_WRITE);
 	
 	if (r != I2C_ACK) return 0;
 	
-	i2c_stop(lcd->_i2c);
+	i2c_stop(i2c);
 	return 1;
 }
 
