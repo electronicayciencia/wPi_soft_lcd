@@ -19,6 +19,7 @@ lcd_t *lcd_create(int scl, int sda, int addr) {
 
 	lcd->_addr         = addr;
 	lcd->_i2c          = i2c_init(scl, sda);
+	lcd->err           = 0;
 
 	lcd->fcn_set       = LCD_FCN_4BIT | LCD_FCN_2LINES | LCD_FCN_5x8;
 	lcd->cursor_set    = LCD_CURSOR_MOVE_CUR | LCD_CURSOR_LEFT;
@@ -111,30 +112,24 @@ void lcd_raw (lcd_t *lcd, int lcd_opts, int data) {
 	_pcf8874_put(lcd, (lower << 4) | lcd_opts);
 }
 
-int _pcf8874_put (lcd_t *lcd, int lines) {
+/* Send a nibble and status lines to PCF8874
+ * Sets condition err in lcd if some error is detected while sending a command */
+void _pcf8874_put (lcd_t *lcd, int lines) {
 	//printf("Sending lines: %02x\n", lines);
 	i2c_start(lcd->_i2c);
-	int r = i2c_send_byte(
-			lcd->_i2c, 
-			lcd->_addr << 1 | I2C_WRITE);
 
-	if (r != I2C_ACK) return 0;
-	
-	r = i2c_send_byte(
-			lcd->_i2c, 
-			lines);
+	if (
+		(i2c_send_byte(lcd->_i2c, lcd->_addr << 1 | I2C_WRITE) == I2C_ACK) &&
+		(i2c_send_byte(lcd->_i2c, lines | LCD_ENABLED) == I2C_ACK) &&
+		//(i2c_send_byte(lcd->_i2c, lines | LCD_ENABLED) == I2C_ACK) &&
+		(i2c_send_byte(lcd->_i2c, lines)               == I2C_ACK)
+	) {
+		i2c_stop(lcd->_i2c);
+		return;
+	}
 
-	r = i2c_send_byte(
-			lcd->_i2c, 
-			lines | LCD_ENABLED);
-
-	r = i2c_send_byte(
-			lcd->_i2c, 
-			lines);
-	
 	i2c_stop(lcd->_i2c);
-
-	return 1;
+	lcd->err = LCD_ERR_I2C;
 }
 
 /* check if PCF8574 driver is ready */

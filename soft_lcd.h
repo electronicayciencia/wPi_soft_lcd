@@ -52,6 +52,7 @@
 #define LCD_CMD_HOME           LCD_D1
 #define LCD_CMD_CLEAR          LCD_D0
 
+#define LCD_ERR_I2C 1
 
 typedef struct {
 	int fcn_set;
@@ -59,6 +60,7 @@ typedef struct {
 	int display_set;
 	int entrymode_set;
 	int backlight;
+	int err;
 	int _addr;
 	i2c_t _i2c;
 } lcd_t;
@@ -76,9 +78,8 @@ void lcd_clear (lcd_t *lcd);
 void lcd_reset (lcd_t *lcd);
 void lcd_print_str(lcd_t *lcd, char *s);
 void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
-int _pcf8874_put (lcd_t *lcd, int lines);
+void _pcf8874_put (lcd_t *lcd, int lines);
 int _pcf8874_check (i2c_t i2c, int addr);
-
 
 
 #endif
