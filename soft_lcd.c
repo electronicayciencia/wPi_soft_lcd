@@ -71,6 +71,49 @@ void lcd_clear (lcd_t *lcd) {
 	usleep(2000);
 }
 
+/* Convenient shortcuts */
+void lcd_on(lcd_t *lcd) {
+	lcd->display_set |= LCD_DISPLAY_ON;
+	lcd_reconfig_display(lcd);
+}
+
+void lcd_off(lcd_t *lcd) {
+	lcd->display_set &= ~LCD_DISPLAY_ON;
+	lcd_reconfig_display(lcd);
+}
+
+void lcd_backlight_on(lcd_t *lcd) {
+	lcd->backlight = LCD_BKLIGHT;
+	lcd_reconfig_display(lcd);
+}
+
+void lcd_backlight_off(lcd_t *lcd) {
+	lcd->backlight = 0;
+	lcd_reconfig_display(lcd);
+}
+
+void lcd_cursor_on(lcd_t *lcd) {
+	lcd->display_set |= LCD_DISPLAY_CURSOR_ON;
+	lcd_reconfig_display(lcd);
+}
+
+void lcd_cursor_off(lcd_t *lcd) {
+	lcd->display_set &= ~LCD_DISPLAY_CURSOR_ON;
+	lcd_reconfig_display(lcd);
+}
+
+void lcd_blink_on(lcd_t *lcd) {
+	lcd->display_set |= LCD_DISPLAY_BLINK_ON;
+	lcd_reconfig_display(lcd);
+}
+
+void lcd_blink_off(lcd_t *lcd) {
+	lcd->display_set &= ~LCD_DISPLAY_BLINK_ON;
+	lcd_reconfig_display(lcd);
+}
+
+
+
 void lcd_pos(lcd_t *lcd, int row, int col) {
 	int r_value[] = {0x00, 0x40, 0x14, 0x54};
 	lcd_raw(lcd, LCD_WRITE, LCD_CMD_DDRAM_SET | (r_value[row] + col));
@@ -94,7 +137,7 @@ void lcd_reset (lcd_t *lcd) {
 }
 
 /* Prints string in actual cursor position */
-void lcd_print_str(lcd_t *lcd, char *instr) {
+void lcd_print(lcd_t *lcd, char *instr) {
 	int i;
 	char *s = instr;
 
@@ -152,7 +195,7 @@ void lcd_raw (lcd_t *lcd, int lcd_opts, int data) {
 	int upper = (data >> 4) & 0xF;
 	int lower = data & 0xF;
 
-	lcd_opts |= LCD_BKLIGHT;
+	lcd_opts |= lcd->backlight;
 
 	//printf("Data: %02x\n", data);
 

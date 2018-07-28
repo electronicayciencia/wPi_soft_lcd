@@ -68,21 +68,31 @@ typedef struct {
 
 lcd_t *lcd_create(int scl, int sda, int addr);
 void lcd_init(lcd_t *lcd);
+
+void lcd_print(lcd_t *lcd, char *s);
+void lcd_pos(lcd_t *lcd, int row, int col);
+void lcd_home(lcd_t *lcd);
+void lcd_clear(lcd_t *lcd);
+void lcd_on(lcd_t *lcd);
+void lcd_off(lcd_t *lcd);
+void lcd_backlight_on(lcd_t *lcd);
+void lcd_backlight_off(lcd_t *lcd);
+void lcd_cursor_on(lcd_t *lcd);
+void lcd_cursor_off(lcd_t *lcd);
+void lcd_blink_on(lcd_t *lcd);
+void lcd_blink_off(lcd_t *lcd);
+
 void lcd_reconfig(lcd_t *lcd);
 void lcd_reconfig_fcn(lcd_t *lcd);
 void lcd_reconfig_cursor(lcd_t *lcd);
 void lcd_reconfig_display(lcd_t *lcd);
 void lcd_reconfig_entrymode(lcd_t *lcd);
-void lcd_pos(lcd_t *lcd, int row, int col);
-void lcd_home (lcd_t *lcd);
-void lcd_clear (lcd_t *lcd);
+
 void lcd_reset (lcd_t *lcd);
-void lcd_print_str(lcd_t *lcd, char *s);
 void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
 char *_replace_UTF8_chars(char *s);
 void _pcf8874_put (lcd_t *lcd, int lines);
 int _pcf8874_check (i2c_t i2c, int addr);
-
 
 #endif
 
