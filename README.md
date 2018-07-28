@@ -57,7 +57,7 @@ There are several levels to use this library:
 
  - **Basic level**: just power on the LCD and display some messages.
  - **Intermediate level**: the above plus some convenient functions like cursor position, clearing screen, cursor types, backlight control or custom characters.
- - **Advanced level**: you know how to use LCD and the different options and commands. You want to have plenty of control over all LCD configurations.
+ - **Advanced level**: you know how to use LCDs and the different options and commands they have. You want to have plenty of control over all LCD configurations.
 
 First of all, include header file in your main program:
 ```c
@@ -70,7 +70,7 @@ gcc -lwiringPi -o example_basic example_basic.c soft_lcd.c soft_i2c.c
 ```
 
 
-### Functions (basic level)
+### Functions (level: basic)
 
 #### lcd_t *lcd_create(int scl, int sda, int addr);
 
@@ -84,10 +84,125 @@ You can have as many LCDs as you need, each connected to different GPIO pins, or
 
 If you set the wrong pin numbers, I2C bus is busy or not pulled up, your power supply is not ready o LCD driver is defective, or any other error condition, it will return NULL.
 
+```c
+/* Create a LCD given SCL, SDA and I2C address */
+lcd_t *lcd = lcd_create(23, 24, 0x3f);
+
+if (lcd == NULL) {
+	printf("Cannot set-up LCD.\n");
+	return 1;
+}
+```
+
+#### void lcd_print(lcd_t *lcd, char *string);
+Display the text given by *string* parameter in the LCD created before at the current cursor position. It overwrites the existing text.
+
+```c
+/* Print a string */
+lcd_print(lcd, "Hello World!");
+```
+
+#### void lcd_pos(lcd_t *lcd, int row, int col);
+Move the cursor to the position given by *row* and *col* parameters. These start in 0; so the first row is 0, the second is 1, and so on. The same for columns. 
+
+The home position is 0,0.
+
+```c
+/* Move the cursor to the start of the second line */
+lcd_pos(lcd, 1, 0);
+```
+
+#### void lcd_destroy(lcd_t *lcd)
+Turn off the display, the backlight and free the memory. It is optional to call this function. If you don't call it at the end of your program, the LCD just shows the last message until you disconnect the power supply.
+
+```c
+/* Turn off LCD and free the memory */
+lcd_destroy(lcd);
+```
+
+### Functions (level: intermediate)
+
+#### void lcd_clear(lcd_t *lcd);
+This function clears all text, return the display to the home position if shifted and moves cursor to the top left corner.
+
+```c
+/* Clear all contents */
+lcd_clear(lcd);
+```
+
+#### void lcd_home(lcd_t *lcd);
+This function return the display to the home position if shifted and moves cursor to the top left corner.
+
+It is different from *lcd_pos* because this only moves the cursor, but does not affect shifting.
+
+```c
+/* Return cursor and display to top-left */
+lcd_home(lcd);
+```
+
+#### void lcd_on(lcd_t *lcd);
+Turns LCD ON (default). When the LCD is on, the display data can be displayed instantly.
+
+#### void lcd_off(lcd_t *lcd);
+When the LCD is off, the display data remains in RAM, and can be displayed instantly by setting D to 1.
+
+#### void lcd_backlight_on(lcd_t *lcd);
+Turns backlight ON (default).
+
+#### void lcd_backlight_off(lcd_t *lcd);
+Turns backlight OFF.
+
+#### void lcd_cursor_on(lcd_t *lcd);
+Makes cursor visible.
+
+#### void lcd_cursor_off(lcd_t *lcd);
+Makes cursor not visible (default).
+
+#### void lcd_blink_on(lcd_t *lcd);
+Enable cursor blinking.
+
+#### void lcd_blink_off(lcd_t *lcd);
+Disable cursor blinking (default).
+
+#### void lcd_create_char(lcd_t *lcd, int n, char *data);
+Stores a custom 5x8 character in the position *n* of the Character Generator RAM. You can use these characters later with codes 0x00 to 0x07.
+
+Please note that character 0x00 is not allowed inside a string, making this character not usable with basic and intermediate functions.
+
+To make a custom character you need to create a binary array.
+```c
+char mychar[] = {
+	0b01110,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b11111
+};
+
+lcd_create_char(lcd, 2, mychar);
+
+lcd_print(lcd, "My char: \02");
+```
+
+### Functions (level: advanced)
+
+#### void lcd_init(lcd_t *lcd);
+#### void lcd_reconfig_fcn(lcd_t *lcd);
+#### void lcd_reconfig_cursor(lcd_t *lcd);
+#### void lcd_reconfig_display(lcd_t *lcd);
+#### void lcd_reconfig_entrymode(lcd_t *lcd);
+#### void lcd_reconfig(lcd_t *lcd);
+
+#### void lcd_reset (lcd_t *lcd);
+#### void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
+
 
 ## Known bugs and limitations
 
-* Not test for busy flag, just relies in delays.
+* Not testing for busy flag, just relies in delays.
 
 ## See also
 
