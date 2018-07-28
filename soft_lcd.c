@@ -30,6 +30,7 @@ lcd_t *lcd_create(int scl, int sda, int addr) {
 	lcd->replace_UTF8_chars = 1;
 	
 	lcd_reset(lcd);
+	lcd_init(lcd);
 
 	return lcd;
 }

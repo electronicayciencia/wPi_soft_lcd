@@ -32,8 +32,6 @@ int main () {
 		return 1;
 	}
 
-	lcd_init(lcd);
-
 	int i;
 	for (i = 7; i >= 1; i--) {
 		printf("Creating character %d...\n",i);

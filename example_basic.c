@@ -23,9 +23,6 @@ int main () {
 		return 1;
 	}
 
-	/* Customize options or leave the defaults and init */
-	lcd_init(lcd);
-
 	/* Print a string */
 	lcd_print(lcd, "Hello World!");
 

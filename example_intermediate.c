@@ -21,7 +21,6 @@ int main () {
 		return 1;
 	}
 
-	lcd_init(lcd);
 	lcd_print(lcd, "Electronica y");
 	lcd_pos(lcd, 1,0);
 	lcd_print(lcd, "Ciencia");
