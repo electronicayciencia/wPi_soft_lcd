@@ -93,8 +93,8 @@ void lcd_reconfig_entrymode(lcd_t *lcd);
 void lcd_reset (lcd_t *lcd);
 void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
 char *_replace_UTF8_chars(char *s);
-void _pcf8874_put (lcd_t *lcd, int lines);
-int _pcf8874_check (i2c_t i2c, int addr);
+void _pcf8574_put (lcd_t *lcd, int lines);
+int _pcf8574_check (i2c_t i2c, int addr);
 
 #endif
 

@@ -13,7 +13,7 @@ lcd_t *lcd_create(int scl, int sda, int addr) {
 	        return NULL;
 	
 	i2c_t i2c = i2c_init(scl, sda);
-	if ( !_pcf8874_check(i2c, addr) ) return NULL;
+	if ( !_pcf8574_check(i2c, addr) ) return NULL;
 
 	lcd_t *lcd = (lcd_t*) malloc(sizeof(lcd_t));
 
@@ -127,18 +127,18 @@ void lcd_pos(lcd_t *lcd, int row, int col) {
 /* Set LCD controller into a known state and set 4 bit mode */
 void lcd_reset (lcd_t *lcd) {
 	usleep(45000);
-	_pcf8874_put(lcd, LCD_D5 | LCD_D4);
+	_pcf8574_put(lcd, LCD_D5 | LCD_D4);
 
 	usleep(5000);
-	_pcf8874_put(lcd, LCD_D5 | LCD_D4);
+	_pcf8574_put(lcd, LCD_D5 | LCD_D4);
 
 	usleep(1000);
-	_pcf8874_put(lcd, LCD_D5 | LCD_D4);
+	_pcf8574_put(lcd, LCD_D5 | LCD_D4);
 
-	/* we assume pcf8874 and 4bit mode for now */
+	/* we assume pcf8574 and 4bit mode for now */
 	if (lcd->fcn_set & LCD_FCN_8BIT) return;
 
-	_pcf8874_put(lcd, LCD_CMD_FCN_SET | LCD_FCN_4BIT);
+	_pcf8574_put(lcd, LCD_CMD_FCN_SET | LCD_FCN_4BIT);
 }
 
 /* Prints string in actual cursor position */
@@ -160,7 +160,7 @@ void lcd_print(lcd_t *lcd, char *instr) {
  * Note that character 0 may be defined, but cannot be used because \x00 is
  * not valid inside a string */
 void lcd_create_char(lcd_t *lcd, int n, char *data) {
-	if (n < 0 || n > 8) return;
+	if (n < 0 || n > 8) return
 	lcd_raw(lcd, LCD_WRITE, LCD_CMD_CGRAM_SET + 8 * n);
 
 	int i;
@@ -220,13 +220,13 @@ void lcd_raw (lcd_t *lcd, int lcd_opts, int data) {
 
 	//printf("Data: %02x\n", data);
 
-	_pcf8874_put(lcd, (upper << 4) | lcd_opts);
-	_pcf8874_put(lcd, (lower << 4) | lcd_opts);
+	_pcf8574_put(lcd, (upper << 4) | lcd_opts);
+	_pcf8574_put(lcd, (lower << 4) | lcd_opts);
 }
 
-/* Send a nibble and status lines to PCF8874
+/* Send a nibble and status lines to PCF8574
  * Sets condition err in lcd if some error is detected while sending a command */
-void _pcf8874_put (lcd_t *lcd, int lines) {
+void _pcf8574_put (lcd_t *lcd, int lines) {
 	//printf("Sending lines: %02x\n", lines);
 	i2c_start(lcd->_i2c);
 
@@ -244,7 +244,7 @@ void _pcf8874_put (lcd_t *lcd, int lines) {
 }
 
 /* check if PCF8574 driver is ready */
-int _pcf8874_check (i2c_t i2c, int addr) {
+int _pcf8574_check (i2c_t i2c, int addr) {
 	i2c_start(i2c);
 
 	int r = i2c_send_byte(
