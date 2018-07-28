@@ -38,12 +38,11 @@ void _i2c_release_wait(int pin) {
 	pinMode(pin, INPUT);
 	delayMicroseconds((1e6/I2C_FREQ)/2);
 	while (!digitalRead(pin)) {
-		if (++n >= 100)	{
-			if (WARN) fprintf(stderr, "Warning: I2C Bus busy or defective. Pin %d is LOW for 10s.\n", pin);
+		if (++n >= 50)	{
+			if (WARN) fprintf(stderr, "Warning: I2C Bus busy or defective. Pin %d is LOW for 5s.\n", pin);
 			return;
 		}
 		delay(100);
-		fprintf(stderr, "Warning: Retry to read pin %d; port used by another program?\n", pin);
 		pinMode(pin, INPUT);
 	}
 	delayMicroseconds((1e6/I2C_FREQ)/2);

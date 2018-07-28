@@ -1,50 +1,48 @@
-/* Program to test LCD
- * Reinoso G.   25/07/2018
+/* Program to test LCD usage.
  *
- * gcc -lwiringPi -o test_lcd test_lcd.c soft_lcd.c soft_i2c.c -g
+ * Electronicayciencia
+ * https://github.com/electronicayciencia/wPi_soft_lcd
  *
+ * Compile this way:
+ * gcc -lwiringPi -o example_basic example_basic.c soft_lcd.c soft_i2c.c
+ *
+ * Reinoso G.
  */
-
 
 #include <stdio.h>
 #include <time.h>
 #include "soft_lcd.h"
 
 int main () {
+	char battery[] = {
+		0b01110,
+		0b10001,
+		0b10001,
+		0b10001,
+		0b10001,
+		0b10001,
+		0b10001,
+		0b11111
+	};
+
+
 	lcd_t *lcd = lcd_create(23, 24, 0x3f);
 	if (lcd == NULL) {
-		printf("LCD not detected.\n");
+		printf("LCD: Cannot initialize\n");
 		return 1;
 	}
+
 	lcd_init(lcd);
-	lcd_pos(lcd, 0,0);
-	lcd_print_str(lcd, "Electronica y");
-	lcd_pos(lcd, 1,0);
-	lcd_print_str(lcd, "Ciencia");
-	
-	while (1) {
-		char buff[9];
 
-		time_t t = time(NULL);
-		struct tm tm = *localtime(&t);
-
-		lcd_pos(lcd, 1,8);
-		snprintf(buff, 9, "%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
-		lcd_print_str(lcd, buff);
-
-		printf("%s\n", buff);
-
-		if (lcd->err) {
-			usleep(100000);
-			lcd_reset(lcd);
-			lcd_init(lcd);
-			lcd_pos(lcd, 0,0);
-			lcd_print_str(lcd, "Error");
-			return 1;
-		}
-
-		usleep(100000);
+	int i;
+	for (i = 7; i >= 1; i--) {
+		printf("%d\n",i);
+		battery[i] = 0b11111;
+		lcd_create_char(lcd, i, battery);
 	}
-	printf("fin\n");
+
+	lcd_print(lcd, "Energy levels:");
+	lcd_pos(lcd, 1,9);
+	lcd_print(lcd, "\01\02\03\04\05\06\07");
 }
 
