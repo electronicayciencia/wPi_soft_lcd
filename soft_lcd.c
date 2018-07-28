@@ -34,6 +34,13 @@ lcd_t *lcd_create(int scl, int sda, int addr) {
 	return lcd;
 }
 
+void lcd_destroy(lcd_t *lcd) {
+	lcd_off(lcd);
+	lcd_backlight_off(lcd);
+	free(lcd);
+}
+
+
 void lcd_init(lcd_t *lcd) {
 	lcd_reconfig(lcd);
 	lcd_clear(lcd);
@@ -112,8 +119,6 @@ void lcd_blink_off(lcd_t *lcd) {
 	lcd_reconfig_display(lcd);
 }
 
-
-
 void lcd_pos(lcd_t *lcd, int row, int col) {
 	int r_value[] = {0x00, 0x40, 0x14, 0x54};
 	lcd_raw(lcd, LCD_WRITE, LCD_CMD_DDRAM_SET | (r_value[row] + col));
@@ -150,6 +155,22 @@ void lcd_print(lcd_t *lcd, char *instr) {
 
 	if (lcd->replace_UTF8_chars) free(s);
 }
+
+/* Create characters in the CGRAM table
+ * Note that character 0 may be defined, but cannot be used because \x00 is
+ * not valid inside a string */
+void lcd_create_char(lcd_t *lcd, int n, char *data) {
+	if (n < 0 || n > 8) return;
+	lcd_raw(lcd, LCD_WRITE, LCD_CMD_CGRAM_SET + 8 * n);
+
+	int i;
+	for (i = 0; i < 8; i++) {
+		lcd_raw(lcd, LCD_WRITE | LCD_RS, data[i]);
+	}
+
+	lcd_pos(lcd,0,0);
+}
+
 
 /* Replace non-ascii characters in the string.
  * String must be UTF8.

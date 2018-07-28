@@ -67,6 +67,7 @@ typedef struct {
 } lcd_t;
 
 lcd_t *lcd_create(int scl, int sda, int addr);
+void lcd_destroy(lcd_t *lcd);
 void lcd_init(lcd_t *lcd);
 
 void lcd_print(lcd_t *lcd, char *s);
@@ -81,6 +82,7 @@ void lcd_cursor_on(lcd_t *lcd);
 void lcd_cursor_off(lcd_t *lcd);
 void lcd_blink_on(lcd_t *lcd);
 void lcd_blink_off(lcd_t *lcd);
+void lcd_create_char(lcd_t *lcd, int n, char *data);
 
 void lcd_reconfig(lcd_t *lcd);
 void lcd_reconfig_fcn(lcd_t *lcd);
