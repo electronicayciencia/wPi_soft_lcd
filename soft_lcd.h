@@ -60,6 +60,7 @@ typedef struct {
 	int display_set;
 	int entrymode_set;
 	int backlight;
+	int replace_UTF8_chars;
 	int err;
 	int _addr;
 	i2c_t _i2c;
@@ -78,6 +79,7 @@ void lcd_clear (lcd_t *lcd);
 void lcd_reset (lcd_t *lcd);
 void lcd_print_str(lcd_t *lcd, char *s);
 void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
+char *_replace_UTF8_chars(char *s);
 void _pcf8874_put (lcd_t *lcd, int lines);
 int _pcf8874_check (i2c_t i2c, int addr);
 
