@@ -72,21 +72,35 @@ gcc -lwiringPi -o example_basic example_basic.c soft_lcd.c soft_i2c.c
 
 ### Functions (level: basic)
 
-#### lcd_t *lcd_create(int scl, int sda, int addr);
+#### Describe the LCD
 
-Initializes a new I2C bus. The parameters SCL and SDA are SCL and SDA pin numbers. Please use WiringPi numeration. 
+This library assumes that:
+ - you are using an LCD based on HD44780 controller
+ - you talk to it via I2C 8-Bit Expander like PCF8574.
 
-After that, tries to communicate with PCF8574 driver and reset the LCD to a known state.
+If you don't know what all those means, then translate it by **this library works like charm with $3 Ebay's I2C LCD**.
 
-If it goes all right, it returns a new lcd_t structure with the default configuration.
+In order to communicate with an LCD you need to specify:
+ - A pin number for I2C SCL line (wiringPi numeration)
+ - A pin number for I2C SDA line (wiringPi numeration)
+ - An I2C address for the I2C device (0x3f usually).
+ - The number of lines in the LCD (1, 2 or 4 character lines).
+
+It returns a LCD structure you have to pass to every function in the libray. Note that you may have several LCD at the same time.
+
+```c
+lcd_t *lcd_create(int scl, int sda, int addr, int lines);
+```
+
+It initializes a new I2C bus. Then tries to communicate with PCF8574 driver and reset the LCD to a known state. If it goes all right, it returns a new lcd_t structure with the default configuration.
 
 You can have as many LCDs as you need, each connected to different GPIO pins, or in the same if you use different address for the driver.
 
 If you set the wrong pin numbers, I2C bus is busy or not pulled up, your power supply is not ready o LCD driver is defective, or any other error condition, it will return NULL.
 
 ```c
-/* Create a LCD given SCL, SDA and I2C address */
-lcd_t *lcd = lcd_create(23, 24, 0x3f);
+/* Create a LCD given SCL, SDA and I2C address, two lines */
+lcd_t *lcd = lcd_create(23, 24, 0x3f, 2);
 
 if (lcd == NULL) {
 	printf("Cannot set-up LCD.\n");
@@ -94,16 +108,22 @@ if (lcd == NULL) {
 }
 ```
 
-#### void lcd_print(lcd_t *lcd, char *string);
-Display the text given by *string* parameter in the LCD created before at the current cursor position. It overwrites the existing text.
+#### Print text
+This function displays the text given by *string* parameter in the LCD created before at the current cursor position. It overwrites the existing text.
 
 ```c
 /* Print a string */
 lcd_print(lcd, "Hello World!");
 ```
 
-#### void lcd_pos(lcd_t *lcd, int row, int col);
-Move the cursor to the position given by *row* and *col* parameters. These start in 0; so the first row is 0, the second is 1, and so on. The same for columns. 
+#### Set text position
+This function moves the cursor to the position given by *row* and *col* parameters. 
+
+```c
+lcd_pos(lcd_t *lcd, int row, int col);
+```
+
+Row and Col start at 0; so the first row is 0, the second is 1, and so on. The same for columns. 
 
 The home position is 0,0.
 
@@ -112,8 +132,10 @@ The home position is 0,0.
 lcd_pos(lcd, 1, 0);
 ```
 
-#### void lcd_destroy(lcd_t *lcd)
-Turn off the display, the backlight and free the memory. It is optional to call this function. If you don't call it at the end of your program, the LCD just shows the last message until you disconnect the power supply.
+#### Free the LCD
+This function may be called at the end of your program. It is optional. If you don't call it, then the LCD just shows the last message until you disconnect the power supply after your program ends.
+
+It turns off the display, the backlight and frees the memory. 
 
 ```c
 /* Turn off LCD and free the memory */
@@ -122,7 +144,8 @@ lcd_destroy(lcd);
 
 ### Functions (level: intermediate)
 
-#### void lcd_clear(lcd_t *lcd);
+#### Clear display
+
 This function clears all text, return the display to the home position if shifted and moves cursor to the top left corner.
 
 ```c
@@ -130,7 +153,7 @@ This function clears all text, return the display to the home position if shifte
 lcd_clear(lcd);
 ```
 
-#### void lcd_home(lcd_t *lcd);
+#### Return to home 
 This function return the display to the home position if shifted and moves cursor to the top left corner.
 
 It is different from *lcd_pos* because this only moves the cursor, but does not affect shifting.
@@ -140,34 +163,48 @@ It is different from *lcd_pos* because this only moves the cursor, but does not 
 lcd_home(lcd);
 ```
 
-#### void lcd_on(lcd_t *lcd);
-Turns LCD ON (default). When the LCD is on, the display data can be displayed instantly.
+#### LCD and backlight
 
-#### void lcd_off(lcd_t *lcd);
-When the LCD is off, the display data remains in RAM, and can be displayed instantly by setting D to 1.
+Turns LCD ON (default) or OFF. When the LCD is on, the display data can be displayed instantly. When the LCD is off, the display data remains in RAM, and can be displayed instantly by switching it to ON.
+```c
+lcd_on(lcd);
+lcd_off(lcd);
+```
 
-#### void lcd_backlight_on(lcd_t *lcd);
-Turns backlight ON (default).
+The backlight functions turns the backlight ON (default) or OFF.
 
-#### void lcd_backlight_off(lcd_t *lcd);
-Turns backlight OFF.
+```c
+lcd_backlight_on(lcd);
+lcd_backlight_off(lcd);
+```
+   
+#### Cursor style
 
-#### void lcd_cursor_on(lcd_t *lcd);
-Makes cursor visible.
+Make cursor visible or invisible (default). Enable or disable (default) cursor blinking.
 
-#### void lcd_cursor_off(lcd_t *lcd);
-Makes cursor not visible (default).
+```c
+lcd_cursor_on(lcd);
+lcd_cursor_off(lcd);
+lcd_blink_on(lcd);
+lcd_blink_off(lcd);
+```
 
-#### void lcd_blink_on(lcd_t *lcd);
-Enable cursor blinking.
+#### Create custom characters
 
-#### void lcd_blink_off(lcd_t *lcd);
-Disable cursor blinking (default).
+The function *lcd_create_char* allows you to add up to 8 custom characters to the predefined characters set.
 
-#### void lcd_create_char(lcd_t *lcd, int n, char *data);
-Stores a custom 5x8 character in the position *n* of the Character Generator RAM. You can use these characters later with codes 0x00 to 0x07.
+```
+void lcd_create_char(lcd_t *lcd, int n, char *data);
+```
 
-Please note that character 0x00 is not allowed inside a string, making this character not usable with basic and intermediate functions.
+The arguments are:
+ - The LCD structure you want to operate
+ - The position you want to store the custom char: 0 to 8
+ - The 8 position binary string that defines the character (see example below).
+
+It stores a custom 5x8 character in the position *n* of the Character Generator RAM. You can use these characters later with codes 0x00 to 0x07.
+
+Please note that character 0x00 is not allowed inside a string, making this character actually not usable with basic and intermediate functions.
 
 To make a custom character you need to create a binary array.
 ```c
@@ -186,6 +223,9 @@ lcd_create_char(lcd, 2, mychar);
 
 lcd_print(lcd, "My char: \02");
 ```
+
+#### Checking for errors
+
 
 ### Functions (level: advanced)
 
