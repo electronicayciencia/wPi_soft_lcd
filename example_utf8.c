@@ -1,10 +1,10 @@
-/* Program to test LCD basic usage.
+/* Program to test LCD UTF8 replacement.
  *
  * Electronicayciencia
  * https://github.com/electronicayciencia/wPi_soft_lcd
  *
  * Compile this way:
- * gcc -lwiringPi -o example_basic example_basic.c soft_lcd.c soft_i2c.c
+ * gcc -lwiringPi -o example_utf8 example_utf8.c soft_lcd.c soft_i2c.c
  *
  * Reinoso G.   25/07/2018
  */
