@@ -166,7 +166,7 @@ void lcd_print(lcd_t *lcd, char *instr) {
  * Note that character 0 may be defined, but cannot be used because \x00 is
  * not valid inside a string */
 void lcd_create_char(lcd_t *lcd, int n, char *data) {
-	if (n < 0 || n > 8) return
+	if (n < 0 || n > 8) return;
 	lcd_raw(lcd, LCD_WRITE, LCD_CMD_CGRAM_SET + 8 * n);
 
 	int i;

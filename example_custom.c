@@ -33,9 +33,9 @@ int main () {
 	}
 
 	int i;
-	for (i = 7; i >= 1; i--) {
+	for (i = 1; i <= 7; i++) {
 		printf("Creating character %d...\n",i);
-		battery[i] = 0b11111;
+		battery[7-i+1] = 0b11111;
 		lcd_create_char(lcd, i, battery);
 	}
 
