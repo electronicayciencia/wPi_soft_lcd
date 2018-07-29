@@ -1,262 +1,257 @@
-# wPi_soft_lcd
-Library to use PCF8574 based LCD via software I2C bus.
-# Software emulated I2C for Raspberry Pi
-
-This is a basic software implementation of the I2C protocol using WiringPi library for GPIO.
+# Software I2C LCD for Raspberry PI
+This is a C library that you can use to connect a PCF8574 based LCD to any of your available GPIO ports. It is feature rich and uses software emulated I2C bus.
 
 ## Getting Started
 
 For a quick start guide, please follow these steps:
 
 - Install Gordon's WiringPi library. 
-- Download [soft_i2c.c](soft_i2c.c) and [soft_i2c.h](soft_i2c.h) and place them into your project directory.
-- Include headers file in your main file.
+- Download these 4 files and place them into your project directory.
+  - [soft_i2c.c](soft_i2c.c)
+  - [soft_i2c.h](soft_i2c.h)
+  - [soft_lcd.c](soft_lcd.c) 
+  - [soft_lcd.h](soft_lcd.h) 
+- Include ```soft_lcd.h``` file in your main project.
 - Learn commands from the examples.
-- And don't forget to include the source file when compiling:
+- And don't forget to include the source files and wiringPi library when compiling:
 ```
-gcc -lwiringPi soft_i2c.c pcf8591.c -o pcf8591
+gcc -lwiringPi -o example_basic example_basic.c soft_lcd.c soft_i2c.c
 ```
 
-If you are willing to use pins 8 and 9, please notice these are hardware enabled I2C pins. So make sure you unloaded i2c kernel modules before using these routines.
+If you want to use pins 8 and 9, please notice these are hardware enabled I2C pins. So make sure you unloaded i2c kernel modules before using these routines.
 
 ```
 rmmod i2c_dev 
 rmmod i2c_bcm2708
 ```
 
+As a rule, always ensure the pins you are using to simulate I2C bus are not taken over by any other software in the background.
+
 ### Examples
 
 These are some files that you can use as a quick start guide.
 
-If you want to compile and run them, make sure you modify i2c_init line to match your pin numbers.
+If you want to compile and run them, make sure you modify lcd_create line to match your pin numbers and PCF8574's I2C address.
 
-#### [scan.c](scan.c)
+#### [example_basic.c](example_basic.c)
 
-This is a I2C scanner. It just tries every I2C address from 0 to 128 and test the acknowledge.
+This is a very basic example. It shows to you how to configure a LCD with the predefined defaults and write some text. That's all.
 
-Just modify the *i2c_init* line to set up your ports. Remember to use WiringPi numbers. Run the scan and...
+Just modify the *lcd_create* line to set up your ports. Remember to use WiringPi numbers.
 
-```
-$ ./scan
-I2C scan for soft_i2c project
- * Device found at 50h
-```
+#### [example_intermediate.c](example_intermediate.c)
 
+This is a slightly more complicated example. It shows to you how create a LCD, write test, reposition cursor and check for errors.
 
-#### [pcf8591.c](pcf8591.c)
+It is a clock that displays the string "Electronica y Ciencia" and the current time, updating 10 times a second.
 
-This is a small software to read PCF8591 ADC/DAC. It setup the device to read channel 1 and 
-reads it in continuous mode until the user stop it.
+#### [example_custom.c](example_custom.c)
 
-#### [24lc128.c](24lc128.c)
-
-This example writes a string to a 24ls128 chip and reads it back. It uses 16 bit addressing.
-
-#### [htu21d.c](htu21d.c)
-
-This is a not so simple data logger for humidity and temperature sensor HTU21D.
-
-#### [i2cli.c](i2cli.c)
-
-This is a little more complicated example. A full command line interface for I2C. Simple but raw.
-
-You can use i2cli as a quick approach to a new device. Then save your commands to a script file like [htu21d.i2c](htu21d.i2c).
-
-Or you can send commands one by one by hand to test or to study a part.
-For example, to write and then read 24lc128 EEPROM, like in the last example, you will use this sequence:
-
-```
-$ ./i2cli 9 8
-I2C Command Line Interface
-I2C ready. SCL: 9, SDA: 8
-
-s: start   p: stop   a: ack   n: nak   wHH: write byte HH   r: read byte   q: quit   C: scan
-i2cli> C
- * Device found at 50h  (R: a1, W: a0)
-i2cli> s      ; start
-i2cli> wa0    ; 50h write
-a0 -> ACK
-i2cli> w00    ; address MSB 00h
-00 -> ACK
-i2cli> w00    ; address LSB 01h
-00 -> ACK
-i2cli> w5b    ; write 0001: 5b
-5b -> ACK
-i2cli> w5c    ; write 0002: 5c
-5c -> ACK
-i2cli> p      ; stop
-i2cli> s      ; start
-i2cli> wa0    ; 50h write
-a0 -> ACK
-i2cli> w00    ; address MSB 00h
-00 -> ACK
-i2cli> w02    ; address LSB 02h
-02 -> ACK
-i2cli> s      ; restart
-i2cli> wa1    ; 50h read
-a1 -> ACK
-i2cli> r      ; read byte
-5c            ; byte in 0002: 5c 
-i2cli> p      ; ack
-i2cli> q      ; quit
-i2cli> Bye!
-```
+Reading this example you will learn how to create and show custom characters.
 
 
 
 ## Usage
 
-Include headers file in your main program:
+There are several levels to use this library:
+
+ - **Basic level**: just power on the LCD and display some messages.
+ - **Intermediate level**: the above plus some convenient functions like cursor position, clearing screen, cursor types, backlight control or custom characters.
+ - **Advanced level**: you know how to use LCDs and the different options and commands they have. You want to have plenty of control over all LCD configurations.
+
+First of all, include header file in your main program:
 ```c
-#include "soft_i2c.h"
+#include "soft_lcd.h"
 ```
 
-Since this is not a library, you need to add the source file to gcc compile line.
+Since this is not a library, you need to add the source file of LCD and I2C to gcc compile line.
 ```
-gcc -lwiringPi soft_i2c.c pcf8591.c -o pcf8591
-```
-
-
-### Functions
-
-#### i2c_t i2c_init(int scl, int sda);
-
-Initializes a new i2c bus. The parameters SCL and SDA are SCL and SDA pin numbers. Please use WiringPi numeration. 
-Returns a new i2c_t structure and set the indicated pins as inputs with pull-up enabled.
-
-You can have as many busses defined as you need.
-
-If i2c_init detects the bus is busy, it will wait a moment, then send a clock pulse in order to make the device 
-release SDA so it can create a stop condition.
-
-```c
-i2c_t my_bus1 = i2c_init(9, 8);
+gcc -lwiringPi -o example_basic example_basic.c soft_lcd.c soft_i2c.c
 ```
 
-#### void i2c_start(i2c_t bus);
 
-First, wait until both lines goes up, this means the bus is not busy. Then it sends a I2C start signal to the bus
-passed as parameter. As a result, it drives both lines low. It does not return anything.
+### Functions (level: basic)
 
-```c
-i2c_start(my_bus);
-```
+#### Describe the LCD
 
-#### void i2c_stop(i2c_t bus);
+This library assumes that:
+ - you are using an LCD based on HD44780 controller
+ - you talk to it via I2C 8-Bit Expander like PCF8574.
 
-Sends a I2C start signal to the bus passed as parameter. After that, both lines are released. It does not return anything.
+If you don't know what all those means, then translate it by **this library works like charm with $3 Ebay's I2C LCD**.
+
+In order to communicate with an LCD you need to specify:
+ - A pin number for I2C SCL line (wiringPi numeration)
+ - A pin number for I2C SDA line (wiringPi numeration)
+ - An I2C address for the I2C device (0x3f usually).
+ - The number of lines in the LCD (1, 2 or 4 character lines).
+
+It returns a LCD structure you have to pass to every function in the libray. Note that you may have several LCD at the same time.
 
 ```c
-i2c_stop(my_bus);
+lcd_t *lcd_create(int scl, int sda, int addr, int lines);
 ```
 
-#### void i2c_reset(i2c_t bus);
+It initializes a new I2C bus. Then tries to communicate with PCF8574 driver and reset the LCD to a known state. If it goes all right, it returns a new lcd_t structure with the default configuration.
 
-Issues a bus recovery sequence. Tries to raise SDA. If it fails, reads 9 bit until we get SDA high. 
-This function is called automatically by init, start and stop functions. So you seldom need to use this.
+You can have as many LCDs as you need, each connected to different GPIO pins, or in the same if you use different address for the driver.
 
-```c
-i2c_reset(my_bus);
-```
-
-#### void i2c_send_bit(i2c_t bus, int bit);
-
-Sends one bit through the bus. If second argument is true, it sends one. Zero in other case. 
-Can be used to send an ack from the master. It does not return anything.
-
-This routine is clock stretching aware, it take into account that SCL line should go up before sending more data.
+If you set the wrong pin numbers, I2C bus is busy or not pulled up, your power supply is not ready o LCD driver is defective, or any other error condition, it will return NULL.
 
 ```c
-i2c_send_bit(my_bus, 1);
-```
+/* Create a LCD given SCL, SDA and I2C address, two lines */
+lcd_t *lcd = lcd_create(23, 24, 0x3f, 2);
 
-You can also use the pre-defined constants:
-
-```c
-i2c_send_bit(my_bus, I2C_ACK);
-```
-
-Or
-
-```c
-i2c_send_bit(my_bus, I2C_NACK);
-```
-
-
-#### int i2c_read_bit(i2c_t bus);
-
-Reads one bit and returns it. It is not much useful on its own but used by i2c_read_byte to receive the acknowledge bit.
-
-```c
-status = i2c_read_bit(my_bus);
-```
-
-#### int i2c_send_byte(i2c_t bus, uint8_t byte);
-
-Sends 8 bits (1 byte) through the bus passed as argument. Returns I2C_ACK if the slave ack'ed the byte, 
-and I2C_NACK in case of error. Remember I2C bytes are sent or received MSB first.
-
-```c
-ack = i2c_send_byte(my_bus, address_byte);
-```
-
-For example, to test if there is a device with address 0x48 you can do this:
-
-```c
-i2c_t my_bus1 = i2c_init(9, 8);
-
-i2c_start(my_bus);
-
-if (i2c_send_byte(my_bus, 0x48 << 1 | I2C_READ) == I2C_ACK)
-	puts("Device found!");
-
-i2c_stop(my_bus);
-```
-
-Note the use of I2C_READ and I2C_WRITE to indicate the bus operation.
-
-
-#### uint8_t i2c_read_byte(i2c_t bus);
-
-Reads a byte from the bus and returns it. But NOT ack the byte. You must ack the byte using i2c_send_bit as you wish.
-Remember I2C bytes are sent or received MSB first.
-
-```c
-int byte = i2c_read_byte(i2c);
-
-if (we_liked(byte)) {
-	i2c_send_bit(i2c, I2C_ACK); // 0 is a positive ack
-	printf("We read: %d\n", byte);
-}
-else {
-	i2c_send_bit(i2c, I2C_NACK); // 1 is NOT acknowledge
-	printf("We didn't like the byte.\n");
+if (lcd == NULL) {
+	printf("Cannot set-up LCD.\n");
+	return 1;
 }
 ```
+
+#### Print text
+This function displays the text given by *string* parameter in the LCD created before at the current cursor position. It overwrites the existing text.
+
+```c
+/* Print a string */
+lcd_print(lcd, "Hello World!");
+```
+
+#### Set text position
+This function moves the cursor to the position given by *row* and *col* parameters. 
+
+```c
+lcd_pos(lcd_t *lcd, int row, int col);
+```
+
+Row and Col start at 0; so the first row is 0, the second is 1, and so on. The same for columns. 
+
+The home position is 0,0.
+
+```c
+/* Move the cursor to the start of the second line */
+lcd_pos(lcd, 1, 0);
+```
+
+#### Free the LCD
+This function may be called at the end of your program. It is optional. If you don't call it, then the LCD just shows the last message until you disconnect the power supply after your program ends.
+
+It turns off the display, the backlight and frees the memory. 
+
+```c
+/* Turn off LCD and free the memory */
+lcd_destroy(lcd);
+```
+
+### Functions (level: intermediate)
+
+#### Clear display
+
+This function clears all text, return the display to the home position if shifted and moves cursor to the top left corner.
+
+```c
+/* Clear all contents */
+lcd_clear(lcd);
+```
+
+#### Return to home 
+This function return the display to the home position if shifted and moves cursor to the top left corner.
+
+It is different from *lcd_pos* because this only moves the cursor, but does not affect shifting.
+
+```c
+/* Return cursor and display to top-left */
+lcd_home(lcd);
+```
+
+#### LCD and backlight
+
+Turns LCD ON (default) or OFF. When the LCD is on, the display data can be displayed instantly. When the LCD is off, the display data remains in RAM, and can be displayed instantly by switching it to ON.
+```c
+lcd_on(lcd);
+lcd_off(lcd);
+```
+
+The backlight functions turns the backlight ON (default) or OFF.
+
+```c
+lcd_backlight_on(lcd);
+lcd_backlight_off(lcd);
+```
+   
+#### Cursor style
+
+Make cursor visible or invisible (default). Enable or disable (default) cursor blinking.
+
+```c
+lcd_cursor_on(lcd);
+lcd_cursor_off(lcd);
+lcd_blink_on(lcd);
+lcd_blink_off(lcd);
+```
+
+#### Create custom characters
+
+The function *lcd_create_char* allows you to add up to 8 custom characters to the predefined characters set.
+
+```
+void lcd_create_char(lcd_t *lcd, int n, char *data);
+```
+
+The arguments are:
+ - The LCD structure you want to operate
+ - The position you want to store the custom char: 0 to 8
+ - The 8 position binary string that defines the character (see example below).
+
+It stores a custom 5x8 character in the position *n* of the Character Generator RAM. You can use these characters later with codes 0x00 to 0x07.
+
+Please note that character 0x00 is not allowed inside a string, making this character actually not usable with basic and intermediate functions.
+
+To make a custom character you need to create a binary array.
+```c
+char mychar[] = {
+	0b01110,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b11111
+};
+
+lcd_create_char(lcd, 2, mychar);
+
+lcd_print(lcd, "My char: \02");
+```
+
+#### Checking for errors
+
+
+### Functions (level: advanced)
+
+#### void lcd_init(lcd_t *lcd);
+#### void lcd_reconfig_fcn(lcd_t *lcd);
+#### void lcd_reconfig_cursor(lcd_t *lcd);
+#### void lcd_reconfig_display(lcd_t *lcd);
+#### void lcd_reconfig_entrymode(lcd_t *lcd);
+#### void lcd_reconfig(lcd_t *lcd);
+
+#### void lcd_reset (lcd_t *lcd);
+#### void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
+
 
 ## Known bugs and limitations
 
-* Bus reset sequence is not compliant.
-* Multi master arbitration not supported.
-* Currently only bits and 8 bit registers are supported.
-* Delays are CPU expensive.
-* Low speed, 100kHz frequency only.
-* Only master mode.
+* Not testing for busy flag, just relies in delays.
 
 ## See also
 
-[El bus I2C a bajo nivel](http://electronicayciencia.blogspot.com/2017/02/el-bus-i2c-bajo-nivel.html) (Spanish). Extensive description of this code.
+[El bus I2C a bajo nivel](http://electronicayciencia.blogspot.com/2017/02/el-bus-i2c-bajo-nivel.html) (Spanish). Extensive description of the bit-banged I2C code.
 
 ## Authors
 
 * **Reinoso Guzmán** - *Initial work* - [Electronica y Ciencia](http://electronicayciencia.blogspot.com/)
 
-See also the list of [contributors](https://github.com/electronicayciencia/wPi_soft_i2c/graphs/contributors) who participated in this project.
-
 ## License
 
 This is free and unencumbered software released into the public domain. See the [LICENSE](LICENSE) file for details.
-
-Troubleshooting: port in use by other bnackground program
-
-
