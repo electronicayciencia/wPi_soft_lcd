@@ -209,6 +209,12 @@ char *_replace_UTF8_chars(char *s) {
 				default:   i--; break; // not interesting
 			}
 			i++;
+		} else if (s[i] == 0b11000010) {
+			switch (s[i+1]) {
+				case 0xBA: t[o] = 0xdf; break; // º
+				default:   i--; break; // not interesting
+			}
+			i++;
 		}
 		o++;
 		i++;

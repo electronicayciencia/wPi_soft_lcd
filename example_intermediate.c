@@ -36,6 +36,8 @@ int main () {
 		lcd_print(lcd, buff);
 
 		if (lcd->err) {
+			fprintf(stderr, "LCD error detected!\n");
+
 			usleep(100000);
 			lcd_reset(lcd);
 			lcd_init(lcd);
