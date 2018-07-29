@@ -15,7 +15,7 @@
 #include "soft_lcd.h"
 
 int main () {
-	lcd_t *lcd = lcd_create(23, 24, 0x3f);
+	lcd_t *lcd = lcd_create(23, 24, 0x3f, 2);
 	if (lcd == NULL) {
 		printf("LCD not detected.\n");
 		return 1;

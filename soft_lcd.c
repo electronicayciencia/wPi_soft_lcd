@@ -7,7 +7,7 @@
 #include "soft_i2c.h"
 
 
-lcd_t *lcd_create(int scl, int sda, int addr) {
+lcd_t *lcd_create(int scl, int sda, int addr, int lines) {
 
 	if (wiringPiSetup () == -1)
 	        return NULL;
@@ -21,7 +21,11 @@ lcd_t *lcd_create(int scl, int sda, int addr) {
 	lcd->_i2c          = i2c_init(scl, sda);
 	lcd->err           = 0;
 
-	lcd->fcn_set       = LCD_FCN_4BIT | LCD_FCN_2LINES | LCD_FCN_5x8;
+	lcd->fcn_set       = LCD_FCN_4BIT | LCD_FCN_5x8;
+
+	if (lines > 1)
+		 lcd->fcn_set |= LCD_FCN_2LINES;
+
 	lcd->cursor_set    = LCD_CURSOR_MOVE_CUR | LCD_CURSOR_LEFT;
 	lcd->display_set   = LCD_DISPLAY_ON | LCD_DISPLAY_CURSOR_OFF | LCD_DISPLAY_BLINK_OFF;
 	lcd->entrymode_set = LCD_ENTRYMODE_CURSOR_DECR | LCD_ENTRYMODE_SCROLL_OFF;
@@ -38,6 +42,7 @@ lcd_t *lcd_create(int scl, int sda, int addr) {
 void lcd_destroy(lcd_t *lcd) {
 	lcd_off(lcd);
 	lcd_backlight_off(lcd);
+	lcd_reset(lcd);
 	free(lcd);
 }
 

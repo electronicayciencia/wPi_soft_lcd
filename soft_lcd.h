@@ -66,7 +66,7 @@ typedef struct {
 	i2c_t _i2c;
 } lcd_t;
 
-lcd_t *lcd_create(int scl, int sda, int addr);
+lcd_t *lcd_create(int scl, int sda, int addr, int lines);
 void lcd_destroy(lcd_t *lcd);
 void lcd_init(lcd_t *lcd);
 

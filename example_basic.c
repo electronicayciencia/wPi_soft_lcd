@@ -16,7 +16,7 @@
 int main () {
 
 	/* Create a LCD given SCL, SDA and I2C address */
-	lcd_t *lcd = lcd_create(23, 24, 0x3f);
+	lcd_t *lcd = lcd_create(23, 24, 0x3f, 2);
 
 	if (lcd == NULL) {
 		printf("Cannot set-up LCD.\n");
