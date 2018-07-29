@@ -35,9 +35,11 @@ If you want to compile and run them, make sure you modify lcd_create line to mat
 
 #### [example_basic.c](example_basic.c)
 
-This is a very basic example. It shows to you how to configure a LCD with the predefined defaults and write some text. That's all.
+This is a very basic example. It shows to you how to configure a LCD with the predefined defaults and write some text. That with only a few lines.
 
-Just modify the *lcd_create* line to set up your ports. Remember to use WiringPi numbers.
+![Example basic picture](imgs/example_basic.jpg "Example Basic")
+
+If you want to try it, just modify the *lcd_create* line to set up your ports. Remember to use WiringPi numbers.
 
 #### [example_intermediate.c](example_intermediate.c)
 
@@ -45,10 +47,19 @@ This is a slightly more complicated example. It shows to you how create a LCD, w
 
 It is a clock that displays the string "Electronica y Ciencia" and the current time, updating 10 times a second.
 
+![Intermediate example picture](imgs/example_intermediate.jpg "Example Intermediate")
+
 #### [example_custom.c](example_custom.c)
 
 Reading this example you will learn how to create and show custom characters.
 
+![Custom characters picture](imgs/example_custom.jpg "Example Custom")
+
+#### [example_utf8.c](example_utf8.c)
+
+Reading this example you will learn the effect of UTF8 character replacement.
+
+![UTF8 characters picture](imgs/example_utf8.jpg "Example UTF8 replacement")
 
 
 ## Usage
@@ -64,13 +75,13 @@ First of all, include header file in your main program:
 #include "soft_lcd.h"
 ```
 
-Since this is not a library, you need to add the source file of LCD and I2C to gcc compile line.
+Since this is not a precompiled library, you need to add the source file of LCD and I2C to gcc compile line.
 ```
 gcc -lwiringPi -o example_basic example_basic.c soft_lcd.c soft_i2c.c
 ```
 
 
-### Functions (level: basic)
+### Usage (level: basic)
 
 #### Describe the LCD
 
@@ -116,6 +127,17 @@ This function displays the text given by *string* parameter in the LCD created b
 lcd_print(lcd, "Hello World!");
 ```
 
+##### UTF8 character replacement
+There is an integrated *character replacement* function. If you try to print non-standard 2 byte UTF8 characters like **ÁÉÍÓÚÑáéíóúñ** they will be replaced by a 1 byte equivalent. You can disable this behaviour unsetting a flag in the LCD structure.
+
+```c
+/* Disable characters replacement and print a string */
+lcd->replace_UTF8_chars = 0;
+lcd_print(lcd, "España: áéíóú");
+```
+
+See [example_utf8.c](example_utf8.c) to learn more about this.
+
 #### Set text position
 This function moves the cursor to the position given by *row* and *col* parameters. 
 
@@ -142,7 +164,7 @@ It turns off the display, the backlight and frees the memory.
 lcd_destroy(lcd);
 ```
 
-### Functions (level: intermediate)
+### Usage (level: intermediate)
 
 #### Clear display
 
@@ -225,10 +247,33 @@ lcd_print(lcd, "My char: \02");
 ```
 
 #### Checking for errors
+Each and every I2C commands sent to PCF8574 must be acknowledged. If PCF8574  fails to ack a command, the current function stops and set the error flag.
+
+This is uncommon, and due to I2C interference or misfunction.
+
+Checking the error condition, you can take appropiate measures like showing a message by another mean or resetting the LCD; but the last will not always be possible.
+
+You check for error looking al *err* member of the LCD structure. This flag is only cleared in initialization.
+
+```c
+if (lcd->err) {
+	fprintf(stderr, "LCD error detected!\n");
+    
+	usleep(100000);
+    
+	lcd_reset(lcd);
+	lcd_init(lcd);
+	lcd_pos(lcd, 0,0);
+	lcd_print(lcd, "Error");
+    
+	return 1;
+}
+```
 
 
-### Functions (level: advanced)
+### Usage (level: advanced)
 
+#### void lcd_reset (lcd_t *lcd);
 #### void lcd_init(lcd_t *lcd);
 #### void lcd_reconfig_fcn(lcd_t *lcd);
 #### void lcd_reconfig_cursor(lcd_t *lcd);
@@ -236,7 +281,6 @@ lcd_print(lcd, "My char: \02");
 #### void lcd_reconfig_entrymode(lcd_t *lcd);
 #### void lcd_reconfig(lcd_t *lcd);
 
-#### void lcd_reset (lcd_t *lcd);
 #### void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
 
 
