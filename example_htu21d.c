@@ -28,7 +28,7 @@ float read_rht (i2c_t i2c, char cmd) {
 
 	if (i2c_send_byte(i2c, HTUADDRESS << 1 | I2C_WRITE) != I2C_ACK) {
 		fprintf(stderr, "No device found at address %02x.\n", HTUADDRESS);
-		exit(2);
+		return 0;
 	}
 
 	i2c_send_byte(i2c, cmd);
@@ -70,6 +70,7 @@ int main (int argc, char **argv)
 	/* Print LCD header */
 	lcd_print(lcd, "Sensor HTU21D");
 
+	int i = 0;
 	while (1) {
 		char line2[20];
 
@@ -83,7 +84,12 @@ int main (int argc, char **argv)
 		lcd_pos(lcd, 1,0);
 		lcd_print(lcd, line2);
 
-		usleep(100000);
+		/* Make sure it is still running */
+		i = 1 - i;
+		lcd_pos(lcd, 0,15);
+		lcd_print(lcd, i ? "+" : "*");
+
+		usleep(1000000);
 	}
 }
 
