@@ -274,23 +274,59 @@ if (lcd->err) {
 ### Usage (level: advanced)
 
 #### void lcd_reset (lcd_t *lcd);
+Performs an initialization procedure as described at "Initializing by Instruction" section of HD44780 datasheet.
+
 #### void lcd_init(lcd_t *lcd);
-#### void lcd_reconfig_fcn(lcd_t *lcd);
-#### void lcd_reconfig_cursor(lcd_t *lcd);
-#### void lcd_reconfig_display(lcd_t *lcd);
-#### void lcd_reconfig_entrymode(lcd_t *lcd);
-#### void lcd_reconfig(lcd_t *lcd);
+Performs a configuration of the LCD, issuing *lcd_reconfig*, *lcd_clear* and *lcd_home* functions.
+
+#### Reconfig functions
+```c
+void lcd_reconfig_fcn(lcd_t *lcd);
+void lcd_reconfig_cursor(lcd_t *lcd);
+void lcd_reconfig_display(lcd_t *lcd);
+void lcd_reconfig_entrymode(lcd_t *lcd);
+void lcd_reconfig(lcd_t *lcd);
+```
+
+These functions work with internal LCD structure status. Sending the status command with its options to the LCD controller.
+
+Such struct has four configuration sets:
+ - Function set
+ - Cursor set
+ - Display set
+ - Entry mode set
+
+Refer to LCD tutorial or HD44780 datasheet for more information.
+
+These functions allows you to configure every possible status, even invalid ones.
+
+The last función, lcd_reconfig, calls the four functions one after another.
 
 #### void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
+It receives as parameters:
+ - the LCD struct
+ - the options lines (Enabled, R/W and RS)
+ - the data lines
+
+and call PCF8574 to send the upper nibble and the lower nibble in 4 bit interaction mode.
 
 
 ## Known bugs and limitations
 
-* Not testing for busy flag, just relies in delays.
+* Not reading busy flag, just relies in delays.
+* 5x10 mode not fully tested.
+* 4 lines LCD not tested.
 
 ## See also
 
 [El bus I2C a bajo nivel](http://electronicayciencia.blogspot.com/2017/02/el-bus-i2c-bajo-nivel.html) (Spanish). Extensive description of the bit-banged I2C code.
+
+[HD44780 datasheet](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf). Dot Matrix Liquid Crystal Display Controller/Driver.
+
+[PCF8574 datasheet](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf). Remote 8-bit I/O expander for I2C-bus.
+
+[DjLCDSIM](http://www.dinceraydin.com/djlcdsim/djlcdsim.html). Dincer's JavaScript LCD Simulator.
+
 
 ## Authors
 
