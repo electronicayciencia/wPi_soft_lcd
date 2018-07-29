@@ -61,6 +61,11 @@ Reading this example you will learn the effect of UTF8 character replacement.
 
 ![UTF8 characters picture](imgs/example_utf8.jpg "Example UTF8 replacement")
 
+#### [example_htu21d.c](example_htu21d.c)
+
+In this example you will learn to interact with two separate I2C buses. In one of the buses you will have a HTU21D, a temperature and humidity sensor. Please note that this is just an example, not a proper way to use I2C: it is a bus, so you should have connected both devices to the same I2C lines.
+
+![Example of htu21d sensor picture](imgs/example_htu21d.jpg "Example HTU21D sensor")
 
 ## Usage
 
