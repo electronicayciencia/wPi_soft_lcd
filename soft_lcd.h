@@ -1,3 +1,16 @@
+/*
+ * wPi_soft_lcd
+ *      Library to use PCF8574 based LCD via software I2C bus.
+ *      using WiringPi library GPIO.
+ *
+ *      Electronica y ciencia.
+ *      https://github.com/electronicayciencia/wPi_soft_lcd
+ *      https://electronicayciencia.blogspot.com/
+ *
+ *      Reinoso G.
+ */
+
+ 
 #ifndef _SOFT_LCD_H
 #define _SOFT_LCD_H
 
