@@ -103,10 +103,18 @@ void lcd_reconfig_cursor(lcd_t *lcd);
 void lcd_reconfig_display(lcd_t *lcd);
 void lcd_reconfig_entrymode(lcd_t *lcd);
 
+void lcd_pos_raw (lcd_t *lcd, int pos);
 void lcd_reset (lcd_t *lcd);
 void lcd_raw (lcd_t *lcd, int lcd_opts, int data);
+
+int lcd_read_pos_raw (lcd_t *lcd);
+int lcd_read_data (lcd_t *lcd);
+int lcd_read_raw (lcd_t *lcd, int rs);
+
 char *_replace_UTF8_chars(char *s);
+
 void _pcf8574_put (lcd_t *lcd, int lines);
+int _pcf8574_get (lcd_t *lcd, int rs);
 int _pcf8574_check (i2c_t i2c, int addr);
 
 #endif

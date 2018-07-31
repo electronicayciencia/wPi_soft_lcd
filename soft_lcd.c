@@ -140,7 +140,11 @@ void lcd_blink_off(lcd_t *lcd) {
 
 void lcd_pos(lcd_t *lcd, int row, int col) {
 	int r_value[] = {0x00, 0x40, 0x14, 0x54};
-	lcd_raw(lcd, LCD_WRITE, LCD_CMD_DDRAM_SET | (r_value[row] + col));
+	lcd_pos_raw(lcd, r_value[row] + col);
+}
+
+void lcd_pos_raw(lcd_t *lcd, int pos) {
+	lcd_raw(lcd, LCD_WRITE, LCD_CMD_DDRAM_SET | pos);
 }
 
 /* Set LCD controller into a known state and set 4 bit mode */
@@ -190,6 +194,15 @@ void lcd_create_char(lcd_t *lcd, int n, char *data) {
 	lcd_pos(lcd,0,0);
 }
 
+/* Read cursor pos and busy flag */
+int lcd_read_pos_raw (lcd_t *lcd) {
+	return lcd_read_raw(lcd, 0);
+}
+
+/* Read data at cursor and shift */
+int lcd_read_data (lcd_t *lcd) {
+	return lcd_read_raw(lcd, LCD_RS);
+}
 
 /* Replace non-ascii characters in the string.
  * String must be UTF8.
@@ -237,6 +250,7 @@ char *_replace_UTF8_chars(char *s) {
 	return t;
 }
 
+/* Writting a raw command */
 void lcd_raw (lcd_t *lcd, int lcd_opts, int data) {
 	int upper = (data >> 4) & 0xF;
 	int lower = data & 0xF;
@@ -249,8 +263,17 @@ void lcd_raw (lcd_t *lcd, int lcd_opts, int data) {
 	_pcf8574_put(lcd, (lower << 4) | lcd_opts);
 }
 
+/* Reading a raw byte */
+int lcd_read_raw (lcd_t *lcd, int rs) {
+	int u = _pcf8574_get(lcd, rs);
+	int l = _pcf8574_get(lcd, rs);
+
+	return  (u<<4) + l;
+}
+
 /* Send a nibble and status lines to PCF8574
- * Sets condition err in lcd if some error is detected while sending a command */
+ * Sets error condition in lcd if any command is not ack'ed
+ * For write operations, the command is executed after enabled falling edge */
 void _pcf8574_put (lcd_t *lcd, int lines) {
 	//printf("Sending lines: %02x\n", lines);
 	i2c_start(lcd->_i2c);
@@ -267,6 +290,48 @@ void _pcf8574_put (lcd_t *lcd, int lines) {
 	i2c_stop(lcd->_i2c);
 	lcd->err = LCD_ERR_I2C;
 }
+
+/* Reads a nibble from data lines of PCF8574
+ * For read operations:
+ *   - set data lines as input writing them 1
+ *   - raise R/W while Enabled is still down
+ *   - raise Enabled
+ *   - read value
+ *   - low enable
+ * To read data under cursor, set RS
+ * TODO: Set error condition in lcd if any command is not ack'ed */
+int _pcf8574_get (lcd_t *lcd, int rs) {
+	int byte;
+	int lines = LCD_D4|LCD_D5|LCD_D6|LCD_D7
+		| LCD_READ
+		| rs
+		| lcd->backlight;
+
+	/* Set reading lines and reading mode */
+	i2c_start(lcd->_i2c);
+		i2c_send_byte(lcd->_i2c, lcd->_addr << 1 | I2C_WRITE);
+		i2c_send_byte(lcd->_i2c, lines);
+		i2c_send_byte(lcd->_i2c, lines | LCD_ENABLED);
+	i2c_stop(lcd->_i2c);
+
+	/* Actually read lines */
+	i2c_start(lcd->_i2c);
+		i2c_send_byte(lcd->_i2c, lcd->_addr << 1 | I2C_READ);
+		byte = i2c_read_byte(lcd->_i2c);
+		i2c_send_bit(lcd->_i2c, I2C_NACK);
+	i2c_stop(lcd->_i2c);
+
+	/* Unset read mode */
+	i2c_start(lcd->_i2c);
+		i2c_send_byte(lcd->_i2c, lcd->_addr << 1 | I2C_WRITE);
+		i2c_send_byte(lcd->_i2c, lines & ~LCD_ENABLED);
+		i2c_send_byte(lcd->_i2c, lines & ~LCD_READ);
+	i2c_stop(lcd->_i2c);
+
+	//printf("Readed byte: %02x\n", byte);
+	return byte >> 4;
+}
+
 
 /* check if PCF8574 driver is ready */
 int _pcf8574_check (i2c_t i2c, int addr) {

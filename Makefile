@@ -4,7 +4,7 @@ LIBS=-lwiringPi
 CFLAGS=-Wall -Wextra -g
 
 
-all: example_basic example_custom example_intermediate example_utf8 example_htu21d
+all: example_basic example_custom example_intermediate example_utf8 example_htu21d example_read
 
 example_basic: $(INCS) $(HEAD) example_basic.c
 	gcc $(LIBS) -o example_basic example_basic.c $(INCS)
@@ -20,6 +20,9 @@ example_utf8: $(INCS) $(HEAD) example_utf8.c
 
 example_htu21d: $(INCS) $(HEAD) example_htu21d.c
 	gcc $(LIBS) -o example_htu21d example_htu21d.c $(INCS)
+
+example_read: $(INCS) $(HEAD) example_read.c
+	gcc -lwiringPi -o example_read example_read.c soft_lcd.c soft_i2c.c
 
 i2cli: $(INCS) $(HEAD) i2cli.c
 	gcc $(LIBS) -o i2cli i2cli.c $(INCS)
