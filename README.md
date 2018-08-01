@@ -1,5 +1,12 @@
-# Software I2C LCD for Raspberry PI
-This is a C library that you can use to connect a PCF8574 based LCD to any of your available GPIO ports. It is feature rich and uses software emulated I2C bus.
+# Big-banged I2C LCD for Raspberry PI
+This is a C library that you can use to connect a PCF8574 based LCD to any of your available GPIO ports. It uses software emulated (bit-banged) I2C bus.
+
+Features:
+ - Basic usage (cursor positioning, writing strings).
+ - Back light control.
+ - Custom characters definition.
+ - UTF8 wide character replacement table.
+ - Reading status and data from LCD controller.
 
 ## Getting Started
 
@@ -107,7 +114,7 @@ This library assumes that:
  - you are using an LCD based on HD44780 controller
  - you talk to it via I2C 8-Bit Expander like PCF8574.
 
-If you don't know what all those means, then translate it by **this library works like charm with $3 Ebay's I2C LCD**.
+If you don't know what all those means, then translate it by **this library works like a charm with $3 Ebay's I2C LCD**.
 
 In order to communicate with an LCD you need to specify:
  - A pin number for I2C SCL line (wiringPi numeration)
