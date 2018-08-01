@@ -28,8 +28,7 @@ int main () {
 	}
 	
 	/* Write something random */
-	lcd_printf(lcd, "MAX_RAND: %d", RAND_MAX);
-	lcd_pos(lcd, 1,0);
+	lcd_printf(lcd, "MAX_RAND: %d\n", RAND_MAX);
 	lcd_printf(lcd, "Random: %d", rand());
 
 	/* Now read the contents */
