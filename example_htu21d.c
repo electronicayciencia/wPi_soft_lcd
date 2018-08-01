@@ -72,17 +72,12 @@ int main (int argc, char **argv)
 
 	int i = 0;
 	while (1) {
-		char line2[20];
-
-		/* Read Temperature and Humidity from sensor */
-		snprintf (line2, 20, "T:%.1fºC H:%.1f%%",
+		/* Update second line from Temperature and Humidity */
+		lcd_pos(lcd, 1,0);
+		lcd_printf(lcd, "T:%.1fºC H:%.1f%%",
 			-46.85 + 175.72 * read_rht(i2c, 0xe3),
 			 -6    + 125    * read_rht(i2c, 0xe5)
 		);
-
-		/* Update LCD's second line */
-		lcd_pos(lcd, 1,0);
-		lcd_print(lcd, line2);
 
 		/* Make sure it is still running */
 		i = 1 - i;

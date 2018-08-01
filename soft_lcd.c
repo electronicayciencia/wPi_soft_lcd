@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include <wiringPi.h>
 #include "soft_lcd.h"
 #include "soft_i2c.h"
@@ -32,6 +33,7 @@ lcd_t *lcd_create(int scl, int sda, int addr, int lines) {
 
 	lcd->_addr         = addr;
 	lcd->_i2c          = i2c_init(scl, sda);
+	lcd->_lines        = lines;
 	lcd->err           = 0;
 
 	lcd->fcn_set       = LCD_FCN_4BIT | LCD_FCN_5x8;
@@ -164,6 +166,23 @@ void lcd_reset (lcd_t *lcd) {
 	_pcf8574_put(lcd, LCD_CMD_FCN_SET | LCD_FCN_4BIT);
 }
 
+/* Printf to LCD screen  */
+void lcd_printf(lcd_t *lcd, const char* format, ... ) {
+	int i;
+	int linesize = 0x40; // max size in a 16x2 display
+
+	char *buff = (char *) malloc(sizeof(char) * linesize);
+
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buff, linesize, format, args);
+	va_end(args);
+
+	lcd_print(lcd, buff);
+
+	free(buff);
+}
+
 /* Prints string in actual cursor position */
 void lcd_print(lcd_t *lcd, char *instr) {
 	int i;
@@ -212,7 +231,7 @@ char *_replace_UTF8_chars(char *s) {
 	int i = 0; // input counter
 	int o = 0; // output counter
 
-	char *t = (char*) malloc(sizeof(char) * strlen(s));
+	char *t = (char*) malloc(sizeof(char) * (strlen(s) + 1));
 
 	while (s[i]) {
 

@@ -3,6 +3,7 @@ This is a C library that you can use to connect a PCF8574 based LCD to any of yo
 
 Features:
  - Basic usage (cursor positioning, writing strings).
+ - Integrated **print with format** (printf)
  - Back light control.
  - Custom characters definition.
  - UTF8 wide character replacement table.
@@ -68,15 +69,7 @@ Reading this example you will learn the effect of UTF8 character replacement.
 
 ![UTF8 characters picture](imgs/example_utf8.jpg "Example UTF8 replacement")
 
-#### [example_htu21d.c](example_htu21d.c)
-
-In this example you will learn to interact with two separate I2C buses. In one of the buses you will have a HTU21D, a temperature and humidity sensor. Please note that this is just an example, not a proper way to use I2C: it is a bus, so you should have connected both devices to the same I2C lines.
-
-![Example of htu21d sensor picture](imgs/example_htu21d.jpg "Example HTU21D sensor")
-
 #### [example_read.c](example_read.c)
-
-This is the most complicated example so far.
 
 You will write some random number, bigger then screen area of a 16x2 display. Like this.
 
@@ -85,6 +78,15 @@ You will write some random number, bigger then screen area of a 16x2 display. Li
 Then you will retrieve the cursor position and the characters from the LCD controller; even the non visible ones.
 
 ![Example of reading: Program output](imgs/example_read_1.png "Example of reading: Program output")
+
+
+#### [example_htu21d.c](example_htu21d.c)
+
+This is the most complicated example so far.
+
+In this example you will learn to interact with two separate I2C buses. In one of the buses you will have a HTU21D, a temperature and humidity sensor. Please note that this is just an example, not a proper way to use I2C: it is a bus, so you should have connected both devices to the same I2C lines.
+
+![Example of htu21d sensor picture](imgs/example_htu21d.jpg "Example HTU21D sensor")
 
 
 ## Usage
@@ -151,6 +153,17 @@ This function displays the text given by *string* parameter in the LCD created b
 /* Print a string */
 lcd_print(lcd, "Hello World!");
 ```
+
+You can also use ```lcd_printf``` which is similar to the standard C printf function.
+
+```c
+/* Print random number */
+lcd_printf(lcd, "Random: %d", rand());
+
+/* Print the time: HH:MM:SS */
+lcd_printf(lcd, "%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
+```
+
 
 ##### UTF8 character replacement
 There is an integrated *character replacement* function. If you try to print non-standard 2 byte UTF8 characters like **ÁÉÍÓÚÑáéíóúñ** they will be replaced by a 1 byte equivalent. You can disable this behaviour unsetting a flag in the LCD structure.

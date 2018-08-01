@@ -26,14 +26,11 @@ int main () {
 	lcd_print(lcd, "Ciencia");
 
 	while (1) {
-		char buff[9];
-
 		time_t t = time(NULL);
 		struct tm tm = *localtime(&t);
 
 		lcd_pos(lcd, 1,8);
-		snprintf(buff, 9, "%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
-		lcd_print(lcd, buff);
+		lcd_printf(lcd, "%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
 
 		if (lcd->err) {
 			fprintf(stderr, "LCD error detected!\n");

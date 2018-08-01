@@ -75,6 +75,7 @@ typedef struct {
 	int backlight;
 	int replace_UTF8_chars;
 	int err;
+	int _lines;
 	int _addr;
 	i2c_t _i2c;
 } lcd_t;
@@ -83,6 +84,7 @@ lcd_t *lcd_create(int scl, int sda, int addr, int lines);
 void lcd_destroy(lcd_t *lcd);
 void lcd_init(lcd_t *lcd);
 
+void lcd_printf(lcd_t *lcd, const char* format, ... );
 void lcd_print(lcd_t *lcd, char *s);
 void lcd_pos(lcd_t *lcd, int row, int col);
 void lcd_home(lcd_t *lcd);

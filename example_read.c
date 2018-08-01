@@ -17,7 +17,6 @@
 
 int main () {
 	int i;
-	char buff[30]; // larger than visible
 	srand(time(NULL));
 
 	/* Create a LCD given SCL, SDA and I2C address */
@@ -29,13 +28,9 @@ int main () {
 	}
 	
 	/* Write something random */
-	snprintf(buff, 30, "MAX_RAND: %d", RAND_MAX);
-	lcd_print(lcd, buff);
-
+	lcd_printf(lcd, "MAX_RAND: %d", RAND_MAX);
 	lcd_pos(lcd, 1,0);
-	
-	snprintf(buff, 30, "Random: %d", rand());
-	lcd_print(lcd, buff);
+	lcd_printf(lcd, "Random: %d", rand());
 
 	/* Now read the contents */
 
