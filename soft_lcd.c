@@ -208,6 +208,9 @@ void lcd_print(lcd_t *lcd, char *instr) {
  * not valid inside a string */
 void lcd_create_char(lcd_t *lcd, int n, char *data) {
 	if (n < 0 || n > 8) return;
+	
+	int cursor_pos = lcd_read_pos_raw(lcd);
+
 	lcd_raw(lcd, LCD_WRITE, LCD_CMD_CGRAM_SET + 8 * n);
 
 	int i;
@@ -215,7 +218,7 @@ void lcd_create_char(lcd_t *lcd, int n, char *data) {
 		lcd_raw(lcd, LCD_WRITE | LCD_RS, data[i]);
 	}
 
-	lcd_pos(lcd,0,0);
+	lcd_pos_raw(lcd, cursor_pos);
 }
 
 /* Read cursor pos and busy flag */
