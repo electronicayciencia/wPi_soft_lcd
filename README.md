@@ -67,6 +67,19 @@ In this example you will learn to interact with two separate I2C buses. In one o
 
 ![Example of htu21d sensor picture](imgs/example_htu21d.jpg "Example HTU21D sensor")
 
+#### [example_read.c](example_read.c)
+
+This is the most complicated example so far.
+
+You will write some random number, bigger then screen area of a 16x2 display. Like this.
+
+![Example of reading: LCD](imgs/example_read_2.jpg "Example of reading: LCD")
+
+Then you will retrieve the cursor position and the characters from the LCD controller; even the non visible ones.
+
+![Example of reading: Program output](imgs/example_read_1.png "Example of reading: Program output")
+
+
 ## Usage
 
 There are several levels to use this library:
@@ -254,9 +267,9 @@ lcd_print(lcd, "My char: \02");
 #### Checking for errors
 Each and every I2C commands sent to PCF8574 must be acknowledged. If PCF8574  fails to ack a command, the current function stops and set the error flag.
 
-This is uncommon, and due to I2C interference or misfunction.
+This is uncommon, and due to I2C interference or malfunction.
 
-Checking the error condition, you can take appropiate measures like showing a message by another mean or resetting the LCD; but the last will not always be possible.
+Checking the error condition, you can take appropriate measures like showing a message by another mean or resetting the LCD; but the last will not always be possible.
 
 You check for error looking al *err* member of the LCD structure. This flag is only cleared in initialization.
 
@@ -278,11 +291,40 @@ if (lcd->err) {
 
 ### Usage (level: advanced)
 
-#### void lcd_reset (lcd_t *lcd);
-Performs an initialization procedure as described at "Initializing by Instruction" section of HD44780 datasheet.
+#### Reset and initialization;
+The function *lcd_reset* performs an initialization procedure as described at "Initializing by Instruction" section of HD44780 datasheet.
+```c
+void lcd_reset (lcd_t *lcd);
+```
 
-#### void lcd_init(lcd_t *lcd);
-Performs a configuration of the LCD, issuing *lcd_reconfig*, *lcd_clear* and *lcd_home* functions.
+The function *lcd_init* Performs a configuration of the LCD, issuing *lcd_reconfig*, *lcd_clear* and *lcd_home*.
+
+```c
+void lcd_init (lcd_t *lcd);
+```
+
+#### Reading data back from LCD
+
+HD44780 controller allows you to read LCD status back and DDRAM content. You can use this feature to save and restore cursor position or screen data.
+
+You use ```lcd_read_pos_raw``` to retrieve the lcd status. Bit 0x80 is the **Busy Flag**, and the other bits are the cursor position in DDRAM.
+
+```c
+/* Save actual cursor position */
+int old_pos_raw = lcd_read_pos_raw(lcd);
+// ... do something
+lcd_pos_raw(lcd, old_pos_raw);
+```
+Note how you cannot use ```lcd_pos``` because it uses two separate values for row and column; you have to use ```lcd_pos_raw``` instead.
+
+To read data, just use  ```lcd_read_data```. For example, to read the contents of the second line:
+
+```c
+printf("Line 2 contents: ");
+lcd_pos(lcd, 1,0); // second line
+for (i = 0; i < 32; i++) 
+	printf("%c", lcd_read_data(lcd));
+```
 
 #### Reconfig functions
 ```c
