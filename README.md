@@ -3,7 +3,7 @@ This is a C library that you can use to connect a PCF8574 based LCD to any of yo
 
 Features:
  - Basic usage (cursor positioning, writing strings).
- - Integrated **print with format** (printf)
+ - Integrated **print with format** (printf) and multiline text.
  - Back light control.
  - Custom characters definition.
  - UTF8 wide character replacement table.
@@ -164,6 +164,16 @@ lcd_printf(lcd, "Random: %d", rand());
 lcd_printf(lcd, "%02d:%02d:%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
 ```
 
+If you want to write the text in more than one line, you will use newline character:
+
+```c
+/* Multiline text */
+lcd_print(lcd, "Electronica y\nCiencia");
+
+/* A fancy way to sit the cursor at the next line */
+lcd_print(lcd, "Energy level:\n");
+lcd_print(lcd, "         \01\02\03\04\05\06\07");
+```
 
 ##### UTF8 character replacement
 There is an integrated *character replacement* function. If you try to print non-standard 2 byte UTF8 characters like **ÁÉÍÓÚÑáéíóúñ** they will be replaced by a 1 byte equivalent. You can disable this behaviour unsetting a flag in the LCD structure.

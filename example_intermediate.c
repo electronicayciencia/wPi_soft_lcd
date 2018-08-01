@@ -21,9 +21,7 @@ int main () {
 		return 1;
 	}
 
-	lcd_print(lcd, "Electronica y");
-	lcd_pos(lcd, 1,0);
-	lcd_print(lcd, "Ciencia");
+	lcd_print(lcd, "Electronica y\nCiencia");
 
 	while (1) {
 		time_t t = time(NULL);

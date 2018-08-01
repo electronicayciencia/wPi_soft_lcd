@@ -22,6 +22,8 @@
 #define LCD_ENABLED 4
 #define LCD_BKLIGHT 8
 
+#define LCD_BUSY_FLAG 0x80
+
 #define LCD_D0      0x01
 #define LCD_D1      0x02
 #define LCD_D2      0x04
@@ -113,6 +115,7 @@ int lcd_read_pos_raw (lcd_t *lcd);
 int lcd_read_data (lcd_t *lcd);
 int lcd_read_raw (lcd_t *lcd, int rs);
 
+void _lcd_nextline(lcd_t *lcd);
 char *_replace_UTF8_chars(char *s);
 
 void _pcf8574_put (lcd_t *lcd, int lines);

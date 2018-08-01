@@ -141,8 +141,8 @@ void lcd_blink_off(lcd_t *lcd) {
 }
 
 void lcd_pos(lcd_t *lcd, int row, int col) {
-	int r_value[] = {0x00, 0x40, 0x14, 0x54};
-	lcd_pos_raw(lcd, r_value[row] + col);
+	int rows_value[] = {0x00, 0x40, 0x14, 0x54};
+	lcd_pos_raw(lcd, rows_value[row] + col);
 }
 
 void lcd_pos_raw(lcd_t *lcd, int pos) {
@@ -171,7 +171,7 @@ void lcd_printf(lcd_t *lcd, const char* format, ... ) {
 	int i;
 	int linesize = 0x40; // max size in a 16x2 display
 
-	char *buff = (char *) malloc(sizeof(char) * linesize);
+	char *buff = (char *) malloc(sizeof(char) * (linesize+1));
 
 	va_list args;
 	va_start(args, format);
@@ -191,8 +191,13 @@ void lcd_print(lcd_t *lcd, char *instr) {
 	if (lcd->replace_UTF8_chars) s = _replace_UTF8_chars(instr);
 
 	for (i = 0; i < strlen(s); i++) {
+		if (s[i] == '\n') {
+			_lcd_nextline(lcd);
+		}
+		else {
 		//printf("Char: %02x\n", s[i]);
-		lcd_raw(lcd, LCD_WRITE | LCD_RS, s[i]);
+			lcd_raw(lcd, LCD_WRITE | LCD_RS, s[i]);
+		}
 	}
 
 	if (lcd->replace_UTF8_chars) free(s);
@@ -267,6 +272,38 @@ char *_replace_UTF8_chars(char *s) {
 	t[o] = 0;
 
 	return t;
+}
+
+/* Reads the cursor position and sits it at
+ * the beginning of the next line */
+void _lcd_nextline(lcd_t *lcd) {
+	int pos = lcd_read_pos_raw(lcd);
+	//printf("Cursor was at %d.\n", lcd_read_pos_raw(lcd));
+
+	/* LCD should not be busy now */
+	if (pos & LCD_BUSY_FLAG) {
+		lcd->err = 1;
+		return;
+	}
+
+	/* Different LCD lines have different ranges */
+	switch (lcd->_lines) {
+		case 1:
+			lcd_pos_raw(lcd, 0x00);
+			break;
+		case 2:
+			if (pos < 0x40)
+				lcd_pos_raw(lcd, 0x40);
+			break;
+		case 4:
+			if (pos < 0x14)                     // first line
+				lcd_pos_raw(lcd, 0x40);
+			else if (pos >= 0x40 && pos < 0x54) // second line
+				lcd_pos_raw(lcd, 0x14);
+			else if (pos >= 0x14 && pos < 0x40) // third line
+				lcd_pos_raw(lcd, 0x54);
+			break;
+	}
 }
 
 /* Writting a raw command */
@@ -357,8 +394,8 @@ int _pcf8574_check (i2c_t i2c, int addr) {
 	i2c_start(i2c);
 
 	int r = i2c_send_byte(
-			i2c, 
-			addr << 1 | I2C_WRITE);
+		i2c,
+		addr << 1 | I2C_WRITE);
 	
 	if (r != I2C_ACK) return 0;
 	

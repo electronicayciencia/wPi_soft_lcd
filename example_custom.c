@@ -39,8 +39,7 @@ int main () {
 		lcd_create_char(lcd, i, battery);
 	}
 
-	lcd_print(lcd, "Energy level:");
-	lcd_pos(lcd, 1,9);
-	lcd_print(lcd, "\01\02\03\04\05\06\07");
+	lcd_print(lcd, "Energy level:\n");
+	lcd_print(lcd, "         \01\02\03\04\05\06\07");
 }
 
