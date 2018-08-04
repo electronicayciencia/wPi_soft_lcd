@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <wiringPi.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "soft_lcd.h"
 
 #include "soft_i2c.h"
@@ -21,7 +22,6 @@
 /* This function interacts with HTU sensor */
 float read_rht (i2c_t i2c, char cmd) {
 	int value;
-	int vcheck;
 
 	// Send command
 	i2c_start(i2c);
@@ -40,10 +40,10 @@ float read_rht (i2c_t i2c, char cmd) {
 	value  = (i2c_read_byte(i2c) << 8);
 	i2c_send_bit(i2c, I2C_ACK);
 
-	value  = value + i2c_read_byte(i2c) & 0xFFFC; // status bits = 0
+	value  = value + (i2c_read_byte(i2c) & 0xFFFC); // status bits = 0
 	i2c_send_bit(i2c, I2C_ACK);
 
-	vcheck = i2c_read_byte(i2c);
+	i2c_read_byte(i2c);
 	i2c_send_bit(i2c, I2C_NACK);
 
 	i2c_stop(i2c);
@@ -52,7 +52,7 @@ float read_rht (i2c_t i2c, char cmd) {
 }
 
 
-int main (int argc, char **argv)
+int main ()
 {
 	if (wiringPiSetup () == -1)
 		return 1;

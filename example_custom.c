@@ -41,5 +41,7 @@ int main () {
 
 	lcd_print(lcd, "Energy level:\n");
 	lcd_print(lcd, "         \01\02\03\04\05\06\07");
+
+	return 0;
 }
 

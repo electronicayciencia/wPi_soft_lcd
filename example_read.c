@@ -56,5 +56,7 @@ int main () {
 	
 	/* Restore old cursor position */
 	lcd_pos_raw(lcd, old_pos_raw);
+
+	return 0;
 }
 

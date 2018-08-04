@@ -11,6 +11,7 @@
 
 
 #include <stdio.h>
+#include <unistd.h>
 #include "soft_lcd.h"
 
 int main () {
@@ -30,5 +31,7 @@ int main () {
 
 	/* Turn off LCD and free the memory */
 	lcd_destroy(lcd);
+
+	return 0;
 }
 

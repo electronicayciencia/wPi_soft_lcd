@@ -32,5 +32,7 @@ int main () {
 	/* Disable characters replacement and print the same string */
 	lcd->replace_UTF8_chars = 0;
 	lcd_print(lcd, "España: áéíóú");
+
+	return 0;
 }
 

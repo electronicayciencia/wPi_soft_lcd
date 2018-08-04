@@ -67,18 +67,31 @@
 #define LCD_CMD_HOME           LCD_D1
 #define LCD_CMD_CLEAR          LCD_D0
 
+#define LCD_ERR 1
 #define LCD_ERR_I2C 1
 
+/* PWM pins are WPi 1 and WPi 26 */
+#define LCD_PWM_PIN     1
+#define LCD_PWM_CLOCK   19
+#define LCD_PWM_RANGE   1024
+
+
 typedef struct {
+	/* LCD configuration */
 	int fcn_set;
 	int cursor_set;
 	int display_set;
 	int entrymode_set;
+
+	/* User options */
 	int backlight;
 	int replace_UTF8_chars;
 	int err;
+
+	/* Internals */
 	int _lines;
 	int _addr;
+	float _dimming;
 	i2c_t _i2c;
 } lcd_t;
 
@@ -95,6 +108,7 @@ void lcd_on(lcd_t *lcd);
 void lcd_off(lcd_t *lcd);
 void lcd_backlight_on(lcd_t *lcd);
 void lcd_backlight_off(lcd_t *lcd);
+void lcd_backlight_dim(lcd_t *lcd, float intensity);
 void lcd_cursor_on(lcd_t *lcd);
 void lcd_cursor_off(lcd_t *lcd);
 void lcd_blink_on(lcd_t *lcd);

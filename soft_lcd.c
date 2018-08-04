@@ -34,6 +34,8 @@ lcd_t *lcd_create(int scl, int sda, int addr, int lines) {
 	lcd->_addr         = addr;
 	lcd->_i2c          = i2c_init(scl, sda);
 	lcd->_lines        = lines;
+	lcd->_dimming      = -1; // dimmer no used yet
+
 	lcd->err           = 0;
 
 	lcd->fcn_set       = LCD_FCN_4BIT | LCD_FCN_5x8;
@@ -168,7 +170,6 @@ void lcd_reset (lcd_t *lcd) {
 
 /* Printf to LCD screen  */
 void lcd_printf(lcd_t *lcd, const char* format, ... ) {
-	int i;
 	int linesize = 0x40; // max size in a 16x2 display
 
 	char *buff = (char *) malloc(sizeof(char) * (linesize+1));
@@ -185,7 +186,7 @@ void lcd_printf(lcd_t *lcd, const char* format, ... ) {
 
 /* Prints string in actual cursor position */
 void lcd_print(lcd_t *lcd, char *instr) {
-	int i;
+	unsigned int i;
 	char *s = instr;
 
 	if (lcd->replace_UTF8_chars) s = _replace_UTF8_chars(instr);
@@ -229,6 +230,21 @@ int lcd_read_pos_raw (lcd_t *lcd) {
 /* Read data at cursor and shift */
 int lcd_read_data (lcd_t *lcd) {
 	return lcd_read_raw(lcd, LCD_RS);
+}
+
+/* Dim the backlight using PWM on pin BCM 18 */
+void lcd_backlight_dim (lcd_t *lcd, float intensity) {
+	if (lcd->_dimming < 0) {
+		pwmSetClock(LCD_PWM_CLOCK);
+		pwmSetRange(LCD_PWM_RANGE);
+		pinMode(LCD_PWM_PIN, PWM_OUTPUT);
+	}
+
+	if (intensity > 1) intensity = 1;
+	if (intensity < 0) intensity = 0;
+
+	pwmWrite(LCD_PWM_PIN, (int) (intensity * (float)LCD_PWM_RANGE));
+	lcd->_dimming = intensity;
 }
 
 /* Replace non-ascii characters in the string.

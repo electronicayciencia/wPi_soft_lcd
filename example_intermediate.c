@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 #include "soft_lcd.h"
 
 int main () {
@@ -44,5 +45,7 @@ int main () {
 		usleep(100000);
 	}
 	printf("end\n");
+
+	return 0;
 }
 

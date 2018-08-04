@@ -8,6 +8,7 @@ Features:
  - Custom characters definition.
  - UTF8 wide character replacement table.
  - Reading status and data from LCD controller.
+ - Back light dim via PWM.
 
 ## Getting Started
 
@@ -78,6 +79,12 @@ You will write some random number, bigger then screen area of a 16x2 display. Li
 Then you will retrieve the cursor position and the characters from the LCD controller; even the non visible ones.
 
 ![Example of reading: Program output](imgs/example_read_1.png "Example of reading: Program output")
+
+#### [example_dimming.c](example_dimming.c)
+
+This is an example of backlight dimming via PWM.
+
+Note how I used an exponential decay and growth to get a much better fadding efect than linear.
 
 
 #### [example_htu21d.c](example_htu21d.c)
@@ -355,6 +362,26 @@ lcd_pos(lcd, 1,0); // second line
 for (i = 0; i < 32; i++) 
 	printf("%c", lcd_read_data(lcd));
 ```
+
+#### Backlight dimming
+
+Most of PCF8574 LCD drivers have a jumper to switch on and off the back light. This library provides the function ```lcd_backlight_dim``` to control the led through PWM. 
+
+If it is beetween Gnd and the LED, you are lucky; you can control it using just one NPN transistor. But if it is connected between positive (+5V) and the LED, then you will need two. Since the 3.3V output of the PWM pin is too low to cut off a 5V driven PNP transistor.
+
+This is an example of the circuit you can use:
+
+![PWM LED dim hardware](imgs/led_dim_hardware.png "PWM LED dim hardware")
+
+The second parameter to this function is a float number between 0 and 1; where 0 is the dimmest light, and 1 the brightest.
+
+```c
+/* DIM the back light */
+lcd_backlight_dim(lcd, 0.2);
+```
+
+By default, this library uses the pin 1 (wiringpi numeration) PWM0.
+
 
 #### Reconfig functions
 ```c
