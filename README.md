@@ -50,6 +50,15 @@ This is a very basic example. It shows to you how to configure a LCD with the pr
 
 If you want to try it, just modify the *lcd_create* line to set up your ports. Remember to use WiringPi numbers.
 
+#### [example_20x4.c](example_20x4.c)
+
+This is a basic example using 20x4 display. 
+Note the initialization changes in two parameters: The I2C address, because PCF8574's default address is 0x27 while PCF8574A's is 0x3f. And the number of lines. 
+
+![Example 20x4 picture](imgs/example_20x4.jpg "Example 20x4")
+
+If you want to try it, just modify the *lcd_create* line to set up your ports and I2C address. Remember to use WiringPi numbers.
+
 #### [example_intermediate.c](example_intermediate.c)
 
 This is a slightly more complicated example. It shows to you how create a LCD, write test, reposition cursor and check for errors.
@@ -419,7 +428,6 @@ and call PCF8574 to send the upper nibble and the lower nibble in 4 bit interact
 
 * Not reading busy flag, just relies in delays.
 * 5x10 mode not fully tested.
-* 4 lines LCD not tested.
 
 ## See also
 
