@@ -10,6 +10,8 @@ Features:
  - Reading status and data from LCD controller.
  - Back light dim via PWM.
 
+Note this library uses [wPi_soft_i2c](https://github.com/electronicayciencia/wPi_soft_i2c) as its backend, which is based on wiringPi. You can easily adapt it to work with a  different backend by providing suitable alternatives for I2C (i2c_start, i2c_stop, i2c_send_byte and i2c_read_byte) as well as for delay (usleep). I've been using it in a [PIC16F88 here](https://github.com/electronicayciencia/termogeiger/blob/master/firmware/counter-lcd/soft_lcd.c) and with an [ESP8266 here](https://github.com/electronicayciencia/termogeiger/blob/master/firmware/counter-lcd/soft_lcd.c).
+
 ## Getting Started
 
 For a quick start guide, please follow these steps:
